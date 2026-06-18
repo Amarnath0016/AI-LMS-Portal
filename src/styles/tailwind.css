@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 220 26% 96%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --border: 214 32% 91%;
+  --muted: 215 20% 65%;
+  --surface: 216 33% 97%;
+  --surface-strong: 0 0% 100%;
+}
+
+.dark {
+  --background: 222 47% 6%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 11%;
+  --border: 217 33% 17%;
+  --muted: 215 20% 65%;
+  --surface: 222 44% 8%;
+  --surface-strong: 222 41% 12%;
+}
+
+body {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+  transition-duration: 180ms;
+  transition-timing-function: ease;
+}
+
+@layer utilities {
+  .app-shell {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+  }
+
+  .app-card {
+    @apply border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm shadow-slate-950/5 dark:shadow-black/20;
+  }
+
+  .app-surface {
+    @apply bg-[hsl(var(--surface))];
+  }
+
+  .app-surface-strong {
+    @apply bg-[hsl(var(--surface-strong))];
+  }
+
+  .text-muted {
+    color: hsl(var(--muted));
+  }
+
+  .upto-gradient {
+    @apply bg-gradient-to-r from-upto-blue to-upto-orange;
+  }
+  .upto-gradient-text {
+    @apply bg-gradient-to-r from-upto-blue via-purple-500 to-upto-orange bg-clip-text text-transparent;
+  }
+}
+
+html:not(.dark) .bg-upto-dark {
+  background-color: hsl(var(--background));
+}
+
+html:not(.dark) .bg-upto-card {
+  background-color: hsl(var(--card));
+}
+
+html:not(.dark) .text-white {
+  color: hsl(var(--foreground));
+}
+
+html:not(.dark) .text-gray-300,
+html:not(.dark) .text-gray-400,
+html:not(.dark) .text-gray-500 {
+  color: #64748b;
+}
+
+html:not(.dark) .border-gray-800,
+html:not(.dark) .border-gray-700 {
+  border-color: hsl(var(--border));
+}
+
+html:not(.dark) .bg-gray-900\/35,
+html:not(.dark) .bg-gray-800,
+html:not(.dark) .bg-gray-800\/35,
+html:not(.dark) .bg-gray-800\/50,
+html:not(.dark) .bg-gray-800\/60,
+html:not(.dark) .bg-gray-800\/70 {
+  background-color: hsl(var(--surface));
+}
+
+html:not(.dark) .shadow-black\/10,
+html:not(.dark) .shadow-black\/5 {
+  --tw-shadow-color: rgb(15 23 42 / 0.08);
+}
