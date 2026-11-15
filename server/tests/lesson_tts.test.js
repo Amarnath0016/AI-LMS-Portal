@@ -58,6 +58,11 @@ describe("Lesson Real TTS, Caching & Playback Position Test Suite", () => {
       initials: "ML",
       subject: "Distributed Systems Architecture",
       tag: "Technology",
+      type: "original",
+      status: "active",
+      consentDocUrl: "https://uptoskills.edu/consent/maya-lin.pdf",
+      licenseInfo: "Original UptoSkills Fictional Character",
+      disclosureText: "AI-generated mentor. Not the real person.",
       personaPrompt: "You are Dr. Maya Lin teaching distributed architecture.",
       voiceSettings: {
         pitch: 1.0,
@@ -76,6 +81,8 @@ describe("Lesson Real TTS, Caching & Playback Position Test Suite", () => {
       initials: "UC",
       subject: "Unauthorized Voice",
       tag: "Technology",
+      type: "original",
+      status: "pending-consent",
       personaPrompt: "Unlicensed voice testing persona.",
       voiceSettings: {
         voiceName: "",

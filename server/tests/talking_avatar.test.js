@@ -54,7 +54,12 @@ describe("Talking Avatar (Option B: Self-Contained) & Real Viseme Test Suite", (
       initials: "AT",
       subject: "Theoretical Computer Science",
       tag: "Technology",
-      personaPrompt: "You are an AI clone of Alan Turing.",
+      type: "historical",
+      status: "active",
+      consentDocUrl: "https://uptoskills.edu/licenses/turing.pdf",
+      licenseInfo: "Public Domain Historical Figure Educational Tribute",
+      disclosureText: "AI-generated historical mentor tribute. Not the historical person.",
+      personaPrompt: "You are an AI-generated educational tribute inspired by Prof. Alan Turing.",
       avatarSettings: {
         avatarUrl: "/api/ai/avatar-assets/mentor_1.svg",
         avatarType: "svg-canvas-2d",
@@ -77,6 +82,8 @@ describe("Talking Avatar (Option B: Self-Contained) & Real Viseme Test Suite", (
       initials: "UA",
       subject: "Unlicensed Face",
       tag: "Technology",
+      type: "original",
+      status: "pending-consent",
       personaPrompt: "Unlicensed avatar mentor.",
       avatarSettings: {
         avatarUrl: "",

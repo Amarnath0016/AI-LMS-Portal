@@ -1,27 +1,33 @@
 # UptoSkills AI LMS — Fullstack Industry-Grade Platform
 
-An AI-powered Learning Management System (LMS) where students learn courses from **AI Celebrity Mentors** (Elon Musk, Sundar Pichai, Oprah Winfrey, Jensen Huang, Virat Kohli, Shah Rukh Khan, Satya Nadella, Ada Lovelace, Mark Zuckerberg, and Indra Nooyi). The mentors feature authentic celebrity speech synthesis, interactive doubt resolution in persona, and gamified XP leagues.
+An AI-powered Learning Management System (LMS) where learners study curriculum from **Ethical Pedagogical AI Mentors** (Dr. Alex Vance, Dr. Siddharth "Sid" Rao, Elena Montague, Dr. Kai Jensen, Coach Vik Malhotra, Samar Roy, Anya Sharma, Ada Lovelace, Marcus Chen, and Dr. Irene Thorne). The platform features real-time speech synthesis, Web Audio viseme-driven talking avatars, interactive doubt resolution, server-side curriculum grading, and gamified XP leagues—all governed by a documented **Digital Likeness and Ethical AI Policy** ([docs/ETHICS_AND_CONSENT.md](docs/ETHICS_AND_CONSENT.md)).
 
 ---
 
 ## 🌟 Key Features
 
-1. **AI Celebrity Mentors & Voice Synthesis**:
-   - 10 distinct celebrity personas with customized prompt engineering, philosophical viewpoints, and technical expertise.
-   - Real-time speech synthesis with celebrity voice pitch, speech rate, and vocal cadence modulation.
-   - Interactive doubt solver (*Ask Mentor Live*) with in-character responses.
-   - Lip-sync viseme generator and reactive waveform animation.
+1. **Ethical AI Mentors & Digital Likeness Consent**:
+   - Zero non-consensual impersonation of living individuals; all mentors are original fictional characters or public domain historical figures (Ada Lovelace).
+   - Strict legal taxonomy (`original`, `licensed`, `historical`, `consented-person`) with required `consentDocUrl` and `licenseInfo`.
+   - Mandatory admin activation gate preventing activation of unconsented or unlicensed personas.
+   - Visible `"AI-generated mentor. Not the real person."` disclosure banners across all mentor cards, player headers, and chat turns.
+   - Full ethics policy documented in [docs/ETHICS_AND_CONSENT.md](docs/ETHICS_AND_CONSENT.md).
 
-2. **Gamified Leagues & XP System**:
+2. **Real Talking Avatar & Speech Synthesis**:
+   - Self-contained 2D vector talking avatar driven by real-time Web Audio API `AnalyserNode` spectral FFT analysis.
+   - Deterministic phonetic syllable mapping with smooth mouth apertures and natural stochastic micro-expressions.
+   - Cached server-side text-to-speech audio with word timestamps.
+
+3. **Gamified Leagues & XP System**:
    - League-based learning (Python Sprint, Startup League, ML League, Frontend League, Cloud League, etc.).
-   - Earn XP, maintain daily streaks, and climb global leaderboards.
-   - Automated certificate issuance upon 100% course completion with unique verification codes.
+   - Server-computed XP, streaks, and global leaderboards.
+   - Server-issued certificate credentials upon 100% completion and passing required quizzes, with public `/verify/:code` verification.
 
-3. **Complete Industry-Ready Backend**:
+4. **Complete Industry-Ready Backend**:
    - **Framework**: Node.js & Express (ESM).
    - **Database**: Real MongoDB via Mongoose ODM with ObjectId references, compound indexes, and fail-fast connection verification.
    - **Authentication**: JWT (JSON Web Tokens) with `bcryptjs` password hashing and Role-Based Access Control (Student, Instructor, Admin).
-   - **AI Engine**: Google Gemini API integration with intelligent local persona fallback.
+   - **AI Engine**: Google Gemini API with course syllabus grounding and citations.
 
 ---
 
@@ -58,7 +64,7 @@ The backend utilizes real MongoDB via Mongoose schemas with fail-fast initializa
   - `Review`: Unique compound index on `{ courseId: 1, userId: 1 }`.
 - **Mongoose Models (`server/models/`)**:
   - `User`: Accounts, role-based access, profiles, XP, and streaks.
-  - `Mentor`: AI celebrity mentor configurations, vocal profiles, and persona prompts.
+  - `Mentor`: Ethical AI mentor configurations, vocal profiles, consent documents (`consentDocUrl`), licensing (`licenseInfo`), legal taxonomy (`type`), disclosure notice (`disclosureText`), and activation lifecycle (`status`).
   - `Course`: League courses, metadata, tags, and syllabus.
   - `Module`: Course curriculum sections.
   - `Lesson`: Structured lesson units with scripts, durations, and video links.

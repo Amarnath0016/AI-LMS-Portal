@@ -17,6 +17,7 @@ import {
   RefreshCw,
   Subtitles,
   RotateCcw,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { aiApi, enrollmentApi } from "@/api/endpoints";
@@ -313,6 +314,10 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
       const reply = responseData.reply || "Focus on the core fundamentals and practice daily.";
       const citations = responseData.citations || [];
       const label = responseData.label || "AI-generated mentor";
+      const disclosureText =
+        responseData.disclosureText ||
+        responseData.disclosure ||
+        "AI-generated mentor. Not the real person.";
 
       setChatHistory([
         ...newHistory,
@@ -321,6 +326,7 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
           text: reply,
           citations,
           label,
+          disclosureText,
         },
       ]);
     } catch (error) {
@@ -387,6 +393,17 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
           }}
         />
       )}
+
+      {/* Mandatory Ethics & Identity Disclosure Banner (Requirement 4) */}
+      <div className="flex items-center justify-between bg-amber-500/10 px-4 py-2 text-xs text-amber-300 border-b border-amber-500/20">
+        <div className="flex items-center gap-2 font-medium">
+          <ShieldAlert className="h-4 w-4 shrink-0 text-amber-400" />
+          <span>{mentor?.disclosureText || "AI-generated mentor. Not the real person."}</span>
+        </div>
+        <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400/80 bg-amber-500/20 px-2 py-0.5 rounded">
+          {mentor?.type === "historical" ? "Historical Tribute" : "Original Persona"}
+        </span>
+      </div>
 
       {/* Fallback Voice Notice Banner (Requirement 2) */}
       {useFallbackVoice && (
@@ -713,9 +730,9 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
                           <p className="font-semibold text-[11px] text-white">
                             {mentor.name}
                           </p>
-                          <span className="inline-flex items-center gap-1 rounded bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-300 border border-blue-500/20">
-                            <Sparkles className="h-2.5 w-2.5" />
-                            {item.label || "AI-generated mentor"}
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-2 py-0.5 text-[9px] font-bold text-amber-300 border border-amber-500/30">
+                            <ShieldAlert className="h-2.5 w-2.5 text-amber-400" />
+                            {item.disclosureText || item.disclosure || "AI-generated mentor. Not the real person."}
                           </span>
                         </div>
                         <p className="whitespace-pre-line">{item.text}</p>

@@ -8,11 +8,12 @@ import { HeroPanel, SectionCard } from "@/components/ui/dashboard";
 const availableAvatars = [
   { code: "AY", name: "Amarnath Yadav", bg: "from-blue-600 to-indigo-600" },
   { code: "SC", name: "Shailesh", bg: "from-blue-600 to-indigo-600" },
-  { code: "EM", name: "Elon", bg: "from-slate-800 to-slate-900" },
-  { code: "SP", name: "Sundar", bg: "from-blue-900 to-cyan-900" },
-  { code: "OW", name: "Oprah", bg: "from-orange-800 to-red-800" },
-  { code: "JH", name: "Jensen", bg: "from-emerald-800 to-green-900" },
-  { code: "VK", name: "Virat", bg: "from-rose-800 to-red-950" },
+  { code: "AV", name: "Alex Vance", bg: "from-slate-800 to-slate-900" },
+  { code: "SR", name: "Sid Rao", bg: "from-blue-900 to-cyan-900" },
+  { code: "EM", name: "Elena Montague", bg: "from-orange-800 to-red-800" },
+  { code: "KJ", name: "Kai Jensen", bg: "from-emerald-800 to-green-900" },
+  { code: "VM", name: "Vik Malhotra", bg: "from-rose-800 to-red-950" },
+  { code: "AL", name: "Ada Lovelace", bg: "from-purple-900 to-indigo-950" },
 ];
 
 export default function ProfilePage() {

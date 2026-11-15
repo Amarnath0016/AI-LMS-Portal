@@ -71,13 +71,13 @@ export default function LandingPage() {
             <h1 className="text-5xl font-black leading-tight tracking-tight sm:text-6xl">
               Learn from{" "}
               <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-orange-400 bg-clip-text text-transparent">
-                Celebrity AI Mentors
+                Ethical AI Mentors
               </span>
             </h1>
 
             <p className="mt-6 text-lg text-gray-400 leading-relaxed max-w-xl">
-              Study tech, engineering, and startups with AI clones of Elon Musk, Sundar Pichai,
-              Jensen Huang, and more. Authentic synthetic faces and voices powered by production AI.
+              Study tech, engineering, and startups with specialized AI mentors like Dr. Alex Vance, Dr. Sid Rao,
+              and historical figures like Ada Lovelace. Authentic synthetic voices and interactive avatars with zero unauthorized impersonation.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -109,14 +109,14 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Interactive Celebrity Carousel */}
+          {/* Interactive Faculty Carousel */}
           <div className="relative">
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-upto-blue/20 to-orange-500/20 blur-2xl opacity-60" />
 
             <div className="relative rounded-2xl border border-gray-800 bg-upto-card p-6 shadow-2xl">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-bold uppercase tracking-wider text-upto-blue">
-                  AI Celebrity Faculty
+                  AI Educational Faculty
                 </span>
                 <span className="flex items-center gap-1.5 text-xs text-green-400">
                   <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />

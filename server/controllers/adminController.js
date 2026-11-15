@@ -222,3 +222,67 @@ export const rejectInstructorApplication = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * Get all mentors for admin review (including inactive, pending-consent, and license metadata)
+ */
+export const getAdminMentors = async (req, res) => {
+  try {
+    const mentors = await Mentor.find().sort({ id: 1 });
+    return res.json({ success: true, count: mentors.length, data: mentors });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Update mentor status (activate, deactivate, pending-consent)
+ * Enforces: Admin can only activate a mentor if consentDocUrl or licenseInfo is present.
+ */
+export const updateMentorStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let query = {};
+    if (mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === String(id)) {
+      query = { _id: id };
+    } else {
+      query = { id: isNaN(id) ? id : Number(id) };
+    }
+
+    const mentor = await Mentor.findOne(query);
+    if (!mentor) {
+      return res.status(404).json({ success: false, message: "Mentor not found." });
+    }
+
+    const targetStatus = req.body.status || "active";
+
+    // Optional updates for consent and licensing metadata
+    if (req.body.consentDocUrl !== undefined) mentor.consentDocUrl = req.body.consentDocUrl;
+    if (req.body.licenseInfo !== undefined) mentor.licenseInfo = req.body.licenseInfo;
+    if (req.body.type !== undefined) mentor.type = req.body.type;
+    if (req.body.disclosureText !== undefined) mentor.disclosureText = req.body.disclosureText;
+
+    if (targetStatus === "active") {
+      const hasConsent = Boolean(mentor.consentDocUrl && mentor.consentDocUrl.trim());
+      const hasLicense = Boolean(mentor.licenseInfo && mentor.licenseInfo.trim());
+
+      if (!hasConsent && !hasLicense) {
+        return res.status(400).json({
+          success: false,
+          message: "Admin can only activate a mentor if consentDocUrl or licenseInfo is present.",
+        });
+      }
+    }
+
+    mentor.status = targetStatus;
+    await mentor.save();
+
+    return res.json({
+      success: true,
+      message: `Mentor status updated to ${targetStatus} successfully.`,
+      data: mentor,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

@@ -10,6 +10,8 @@ import {
   getInstructorApplications,
   approveInstructorApplication,
   rejectInstructorApplication,
+  getAdminMentors,
+  updateMentorStatus,
 } from "../controllers/adminController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
@@ -34,5 +36,10 @@ router.get("/analytics", getPlatformAnalytics);
 router.get("/instructor-applications", getInstructorApplications);
 router.patch("/instructor-applications/:id/approve", approveInstructorApplication);
 router.patch("/instructor-applications/:id/reject", rejectInstructorApplication);
+
+// Mentor management & consent activation routes
+router.get("/mentors", getAdminMentors);
+router.patch("/mentors/:id/status", updateMentorStatus);
+router.patch("/mentors/:id/activate", updateMentorStatus);
 
 export default router;

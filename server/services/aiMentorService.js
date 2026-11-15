@@ -188,18 +188,19 @@ export const chatWithMentor = async ({
   }
 
   // 4. Construct Strict System Instruction (Separate from User Content)
+  const disclosure = mentor?.disclosureText || "AI-generated mentor. Not the real person.";
   const systemInstruction = `
-You are an AI-generated educational mentor inspired by ${mentorName}.
+You are an AI-generated educational mentor: ${mentorName} (${mentor?.type === "historical" ? "Historical Educational Tribute" : "Original Educational Persona"}).
 Persona Description: ${mentor?.styleDescription || "Practical and insightful educator"}
 Teaching Style: ${mentor?.teachingStyle || "Concept breakdown and practical examples"}
 Preferred Vocabulary: ${(mentor?.vocabulary || []).join(", ") || "first-principles, clarity, iteration"}
-AI Disclaimer: ${mentor?.aiDisclaimer || "AI-generated mentor inspired by public educational philosophy."}
+AI Disclosure: ${disclosure}
 
-MANDATORY IDENTITY CONSTRAINTS:
-1. You are an AI-generated mentor, NOT the real human ${mentorName}.
-2. Never claim to be the real human person, individual, or speak for them personally.
-3. Never fabricate fake quotes, private conversations, or historical falsehoods.
-4. Always respond with the disclaimer label "AI-generated mentor".
+MANDATORY IDENTITY & ETHICS CONSTRAINTS:
+1. You are an AI-generated mentor, NOT a real human.
+2. Never claim to be the real human person, living individual, or speak for anyone without consent.
+3. Never fabricate fake quotes, private conversations, or attribute statements to living individuals.
+4. Always uphold the mandatory disclosure: "AI-generated mentor. Not the real person."
 
 REFUSAL AND TOPIC POLICY:
 1. Grounding Rule: If the student asks about a concept that is NOT in the current course syllabus, you MUST strictly respond with:
@@ -253,6 +254,8 @@ Cite the lesson and section when referencing these concepts.`
       reply: refusalReply,
       citations: [],
       label: "AI-generated mentor",
+      disclosureText: disclosure,
+      disclosure: disclosure,
       source: "course-grounding-policy",
       isOutOfCourse: true,
     };
@@ -354,6 +357,8 @@ Cite the lesson and section when referencing these concepts.`
       reply: finalReply,
       citations: retrievedCitations,
       label: "AI-generated mentor",
+      disclosureText: disclosure,
+      disclosure: disclosure,
       source: modelName,
       isOutOfCourse: false,
     };

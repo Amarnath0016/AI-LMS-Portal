@@ -129,15 +129,20 @@ describe("Production AI Mentor Service Test Suite", () => {
 
     testMentor = await Mentor.create({
       id: 1,
-      name: "Elon Musk",
-      initials: "EM",
+      name: "Dr. Alex Vance",
+      initials: "AV",
       subject: "First Principles & Startup Scale",
       tag: "Entrepreneurship",
+      type: "original",
+      status: "active",
+      consentDocUrl: "https://uptoskills.edu/consent/alex-vance.pdf",
+      licenseInfo: "Original UptoSkills Fictional Character",
+      disclosureText: "AI-generated mentor. Not the real person.",
       styleDescription: "Direct, first-principles focused, physics-grounded logic",
       vocabulary: ["first-principles", "feedback loop", "vector", "bottleneck"],
       teachingStyle: "Deconstructs constraints down to physics and eliminates unnecessary steps",
-      aiDisclaimer: "AI-generated mentor inspired by public engineering philosophy.",
-      personaPrompt: "You are an AI-generated mentor inspired by Elon Musk.",
+      aiDisclaimer: "AI-generated mentor. Not the real person.",
+      personaPrompt: "You are Dr. Alex Vance, an AI-generated educational mentor specializing in first-principles engineering.",
     });
 
     testCourse = await Course.create({

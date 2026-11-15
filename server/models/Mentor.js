@@ -55,7 +55,27 @@ const mentorSchema = new mongoose.Schema(
     styleDescription: { type: String, default: "" },
     vocabulary: [{ type: String }],
     teachingStyle: { type: String, default: "" },
-    aiDisclaimer: { type: String, default: "AI-generated mentor inspired by public teaching philosophy." },
+    aiDisclaimer: { type: String, default: "AI-generated mentor. Not the real person." },
+    // Ethical AI & Consent Architecture
+    type: {
+      type: String,
+      enum: ["original", "licensed", "historical", "consented-person"],
+      default: "original",
+      required: true,
+      index: true,
+    },
+    consentDocUrl: { type: String, default: "" },
+    licenseInfo: { type: String, default: "" },
+    disclosureText: {
+      type: String,
+      default: "AI-generated mentor. Not the real person.",
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "pending-consent", "draft"],
+      default: "active",
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -63,6 +83,21 @@ const mentorSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+// Pre-validate hook: Enforce that mentors can only be active if consentDocUrl or licenseInfo is present
+mentorSchema.pre("validate", function (next) {
+  if (this.status === "active") {
+    const hasConsent = Boolean(this.consentDocUrl && this.consentDocUrl.trim());
+    const hasLicense = Boolean(this.licenseInfo && this.licenseInfo.trim());
+    if (!hasConsent && !hasLicense) {
+      this.invalidate(
+        "status",
+        "Admin can only activate a mentor if consentDocUrl or licenseInfo is present."
+      );
+    }
+  }
+  next();
+});
 
 mentorSchema.index({ tag: 1 });
 

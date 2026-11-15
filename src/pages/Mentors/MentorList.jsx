@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { Sparkles, Loader2, AlertCircle, ShieldCheck, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/common/button";
 import { MentorCard } from "@/components/ui/MentorCard";
@@ -38,15 +38,19 @@ export default function MentorList() {
   return (
     <div>
       <HeroPanel>
-        <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm text-purple-300 mb-4">
-          <Sparkles className="h-4 w-4" />
-          Celebrity Face &amp; Voice · Expert AI Content
+        <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-300 mb-4">
+          <ShieldCheck className="h-4 w-4" />
+          Ethical AI Mentorship · Verified Consent &amp; Licences
         </div>
-        <h1 className="text-4xl font-black">Choose Your AI Celebrity Mentor</h1>
+        <h1 className="text-4xl font-black">Choose Your AI Mentor</h1>
         <p className="mt-2 max-w-2xl text-muted">
-          Select a celebrity whose face and voice will guide your learning journey.
-          The actual teaching content is delivered by our expert AI system.
+          Select an AI educational persona or verified historical mentor to guide your learning journey.
+          All mentors operate with documented licensing, zero living-person impersonation, and clear AI disclosures.
         </p>
+        <div className="mt-4 flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-3.5 py-2 text-xs text-amber-300 max-w-xl">
+          <ShieldAlert className="h-4 w-4 shrink-0 text-amber-400" />
+          <span>Notice: Mentors are AI-generated educational personas and not real living individuals.</span>
+        </div>
       </HeroPanel>
 
       {loading && (

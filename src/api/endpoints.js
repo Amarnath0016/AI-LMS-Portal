@@ -103,6 +103,9 @@ export const adminApi = {
   getInstructorApplications: () => api.get("/admin/instructor-applications"),
   approveInstructorApplication: (id) => api.patch(`/admin/instructor-applications/${id}/approve`),
   rejectInstructorApplication: (id, data) => api.patch(`/admin/instructor-applications/${id}/reject`, data),
+  getMentors: () => api.get("/admin/mentors"),
+  updateMentorStatus: (id, data) => api.patch(`/admin/mentors/${id}/status`, data),
+  activateMentor: (id, data) => api.patch(`/admin/mentors/${id}/activate`, data),
 };
 
 export const instructorApi = {
