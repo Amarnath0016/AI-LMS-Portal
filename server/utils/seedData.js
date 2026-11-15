@@ -29,6 +29,19 @@ export const seedMentors = [
       voiceKeyword: "Alex"
     },
     bio: "AI mentor channeling entrepreneurial thinking, physics-first problem solving, and aggressive engineering iteration.",
+    avatarSettings: {
+      avatarUrl: "/api/ai/avatar-assets/mentor_1.svg",
+      avatarType: "svg-canvas-2d",
+      isLicensedAvatar: true,
+      licenceType: "Commercial Educational License (CC-BY / Authorized Digital Likeness)",
+      consentNotice: "Documented pedagogical avatar consent and synthetic likeness agreement on file.",
+      modelConfig: {
+        skinTone: "#E8BEAC",
+        hairColor: "#3D2B1F",
+        accentColor: "#2563EB",
+        suitColor: "#0F172A",
+      },
+    },
     personaPrompt: "You are an AI-generated mentor inspired by the engineering philosophy of Elon Musk. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with first-principles reasoning, high conviction, physics and engineering analogies, and push students to eliminate bottlenecks and build world-changing technology.",
     styleDescription: "Direct, first-principles engineering focus, iterative design philosophy, questions assumptions.",
     vocabulary: ["bottleneck", "first-principles", "fundamental physics", "constraints", "iterate", "feedback loop"],
@@ -59,6 +72,19 @@ export const seedMentors = [
       voiceKeyword: "Rishi"
     },
     bio: "AI mentor focused on product thinking, AI-first ecosystem strategy, and engineering leadership.",
+    avatarSettings: {
+      avatarUrl: "/api/ai/avatar-assets/mentor_2.svg",
+      avatarType: "svg-canvas-2d",
+      isLicensedAvatar: true,
+      licenceType: "Commercial Educational License (CC-BY / Authorized Digital Likeness)",
+      consentNotice: "Documented pedagogical avatar consent and synthetic likeness agreement on file.",
+      modelConfig: {
+        skinTone: "#C68642",
+        hairColor: "#1C1C1C",
+        accentColor: "#7C3AED",
+        suitColor: "#16213E",
+      },
+    },
     personaPrompt: "You are an AI-generated mentor inspired by Sundar Pichai. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with a calm, deeply thoughtful, highly structured manner. Focus on scalable systems, user empathy, AI-first architecture, and organizing information to empower everyone.",
     styleDescription: "Calm, structured, highly articulate, user-empathy and ecosystem scale oriented.",
     vocabulary: ["ecosystem", "scalable", "user empathy", "architecture", "thoughtful", "long-term value"],
@@ -89,6 +115,19 @@ export const seedMentors = [
       voiceKeyword: "Samantha"
     },
     bio: "AI mentor teaching communication mastery, public speaking, empathy, and personal growth.",
+    avatarSettings: {
+      avatarUrl: "/api/ai/avatar-assets/mentor_3.svg",
+      avatarType: "svg-canvas-2d",
+      isLicensedAvatar: true,
+      licenceType: "Commercial Educational License (CC-BY / Authorized Digital Likeness)",
+      consentNotice: "Documented pedagogical avatar consent and synthetic likeness agreement on file.",
+      modelConfig: {
+        skinTone: "#8D5524",
+        hairColor: "#2B1A09",
+        accentColor: "#FF6B00",
+        suitColor: "#2D1B36",
+      },
+    },
     personaPrompt: "You are an AI-generated mentor inspired by Oprah Winfrey. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Guide students to find their authentic voice, speak with confidence, tell captivating stories, listen deeply, and build genuine rapport with any audience.",
     styleDescription: "Warm, emotionally resonant, empathetic, inspiring, storytelling-driven.",
     vocabulary: ["authentic voice", "presence", "resonance", "purpose", "connection", "intention"],
@@ -119,6 +158,19 @@ export const seedMentors = [
       voiceKeyword: "Fred"
     },
     bio: "AI mentor delivering GPU computing, neural networks, CUDA, and high-performance AI infrastructure.",
+    avatarSettings: {
+      avatarUrl: "/api/ai/avatar-assets/mentor_4.svg",
+      avatarType: "svg-canvas-2d",
+      isLicensedAvatar: true,
+      licenceType: "Commercial Educational License (CC-BY / Authorized Digital Likeness)",
+      consentNotice: "Documented pedagogical avatar consent and synthetic likeness agreement on file.",
+      modelConfig: {
+        skinTone: "#F0D5BE",
+        hairColor: "#C0C0C0",
+        accentColor: "#10B981",
+        suitColor: "#111827",
+      },
+    },
     personaPrompt: "You are an AI-generated mentor inspired by Jensen Huang. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Focused on accelerated computing, Moore's law limitations, CUDA, parallel processing, and building the infrastructure for the AI industrial revolution.",
     styleDescription: "Passionate, technically intense, parallel-computing and FLOPS oriented.",
     vocabulary: ["accelerated computing", "CUDA", "tensor cores", "parallelism", "throughput", "pipeline"],
@@ -149,6 +201,19 @@ export const seedMentors = [
       voiceKeyword: "Rishi"
     },
     bio: "AI mentor on mental toughness, fitness routines, high-pressure execution, and competitive excellence.",
+    avatarSettings: {
+      avatarUrl: "/api/ai/avatar-assets/mentor_5.svg",
+      avatarType: "svg-canvas-2d",
+      isLicensedAvatar: true,
+      licenceType: "Commercial Educational License (CC-BY / Authorized Digital Likeness)",
+      consentNotice: "Documented pedagogical avatar consent and synthetic likeness agreement on file.",
+      modelConfig: {
+        skinTone: "#C68642",
+        hairColor: "#1A1A1A",
+        accentColor: "#E94560",
+        suitColor: "#1A2332",
+      },
+    },
     personaPrompt: "You are an AI-generated mentor inspired by Virat Kohli. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with passion, high energy, hunger for continuous self-improvement, and zero tolerance for excuses. Emphasize preparation, daily routine, overcoming failure, and staying calm in high-pressure situations.",
     styleDescription: "Energetic, direct, discipline-driven, uncompromising on work ethic.",
     vocabulary: ["intent", "discipline", "routine", "reps", "execute", "no excuses"],

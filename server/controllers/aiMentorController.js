@@ -10,8 +10,8 @@ import {
   synthesizeSpeechElevenLabs,
 } from "../services/voiceSynthesisService.js";
 import {
-  generateVisemeTimeline,
-  getAvatarStreamingConfig,
+  getMentorAvatarConfig,
+  computePhoneticVisemes,
 } from "../services/avatarAnimationService.js";
 import LessonDraft from "../models/LessonDraft.js";
 import Mentor from "../models/Mentor.js";
@@ -64,7 +64,7 @@ export const handleMentorChat = async (req, res) => {
     });
 
     const voiceConfig = getCelebrityVoiceConfig(Number(mentorId));
-    const visemes = generateVisemeTimeline(aiResponse.reply, 4000);
+    const visemes = computePhoneticVisemes({ text: aiResponse.reply });
 
     return res.json({
       success: true,
@@ -214,9 +214,12 @@ export const handleGetVoiceProfile = async (req, res) => {
 export const handleGetAvatarConfig = async (req, res) => {
   try {
     const { mentorId } = req.params;
-    const config = getAvatarStreamingConfig(Number(mentorId));
+    const config = await getMentorAvatarConfig(mentorId);
     return res.json({ success: true, data: config });
   } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ success: false, message: error.message });
+    }
     return res.status(500).json({ success: false, message: error.message });
   }
 };

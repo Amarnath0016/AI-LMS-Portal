@@ -28,6 +28,29 @@ const mentorSchema = new mongoose.Schema(
       voiceKeyword: { type: String, default: "Google US English" },
     },
     bio: { type: String, default: "" },
+    avatarSettings: {
+      avatarUrl: { type: String, default: "" },
+      avatarType: {
+        type: String,
+        enum: ["svg-canvas-2d", "vector-animated", "static-portrait"],
+        default: "svg-canvas-2d",
+      },
+      isLicensedAvatar: { type: Boolean, default: true },
+      licenceType: {
+        type: String,
+        default: "Commercial Educational License (CC-BY / Authorized Digital Likeness)",
+      },
+      consentNotice: {
+        type: String,
+        default: "Documented pedagogical avatar consent and synthetic likeness agreement on file.",
+      },
+      modelConfig: {
+        skinTone: { type: String, default: "#F5D0C5" },
+        hairColor: { type: String, default: "#2C3E50" },
+        accentColor: { type: String, default: "#2563EB" },
+        suitColor: { type: String, default: "#1E293B" },
+      },
+    },
     personaPrompt: { type: String, required: true },
     styleDescription: { type: String, default: "" },
     vocabulary: [{ type: String }],

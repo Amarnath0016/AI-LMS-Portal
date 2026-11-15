@@ -21,6 +21,7 @@ import {
 import { Button } from "@/components/common/button";
 import { aiApi, enrollmentApi } from "@/api/endpoints";
 import { toast } from "sonner";
+import { TalkingAvatar } from "./TalkingAvatar";
 
 export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
   const [playing, setPlaying] = useState(false);
@@ -427,25 +428,15 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
           </div>
         )}
 
-        {/* Celebrity Avatar with Audio Visualizer Effect */}
-        <div className="relative z-10 flex flex-col items-center gap-3">
-          <div className="relative">
-            <div
-              className={`flex h-24 w-24 items-center justify-center rounded-full text-3xl font-black text-white shadow-2xl ring-4 transition-transform duration-300 ${
-                playing ? "ring-blue-400 scale-105" : "ring-white/10"
-              }`}
-              style={{ background: mentor.accent }}
-            >
-              {mentor.initials}
-            </div>
-
-            {/* Speaking mic indicator */}
-            {playing && (
-              <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 text-white shadow-md animate-bounce">
-                <Mic className="h-4 w-4" />
-              </span>
-            )}
-          </div>
+        {/* Real Talking Avatar Component (Option B: Self-Contained WebAudio Visemes) */}
+        <div className="relative z-10 flex flex-col items-center gap-2">
+          <TalkingAvatar
+            mentor={mentor}
+            audioRef={audioRef}
+            playing={playing}
+            words={audioData?.words || []}
+            currentTime={currentTime}
+          />
 
           <div className="text-center">
             <p className="text-lg font-black text-white tracking-wide">{mentor.name}</p>

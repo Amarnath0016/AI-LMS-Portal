@@ -162,6 +162,22 @@ app.get("/api/ai/audio-files/:filename", (req, res) => {
   fs.createReadStream(filePath).pipe(res);
 });
 
+// Static Avatar Assets for Talking Avatars
+const avatarAssetsDir = path.resolve(__dirname, "public/avatars");
+if (!fs.existsSync(avatarAssetsDir)) {
+  fs.mkdirSync(avatarAssetsDir, { recursive: true });
+}
+app.use("/api/ai/avatar-assets", express.static(avatarAssetsDir));
+app.get("/api/ai/avatar-assets/:filename", (req, res) => {
+  const filePath = path.join(avatarAssetsDir, req.params.filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: "Avatar asset not found." });
+  }
+  res.setHeader("Content-Type", req.params.filename.endsWith(".svg") ? "image/svg+xml" : "image/png");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  fs.createReadStream(filePath).pipe(res);
+});
+
 // Error Handling Middlewares
 app.use(notFound);
 app.use(errorHandler);
