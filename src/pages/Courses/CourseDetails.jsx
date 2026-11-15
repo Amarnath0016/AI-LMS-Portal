@@ -134,6 +134,7 @@ export default function CourseDetails() {
             <AIMentorPlayer
               mentor={currentMentor}
               lesson={activeLesson}
+              courseId={course?._id || course?.id}
               onComplete={handleLessonComplete}
             />
           ) : (

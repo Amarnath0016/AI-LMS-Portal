@@ -25,7 +25,11 @@ export const seedMentors = [
       tone: "visionary"
     },
     bio: "AI mentor channeling entrepreneurial thinking, physics-first problem solving, and aggressive engineering iteration.",
-    personaPrompt: "You are an AI clone of Elon Musk. Your goal is to mentor students in tech, engineering, and startups. Speak with first-principles reasoning, high conviction, physics and rocket/car analogies, and push students to eliminate bottlenecks and build world-changing technology."
+    personaPrompt: "You are an AI-generated mentor inspired by the engineering philosophy of Elon Musk. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with first-principles reasoning, high conviction, physics and engineering analogies, and push students to eliminate bottlenecks and build world-changing technology.",
+    styleDescription: "Direct, first-principles engineering focus, iterative design philosophy, questions assumptions.",
+    vocabulary: ["bottleneck", "first-principles", "fundamental physics", "constraints", "iterate", "feedback loop"],
+    teachingStyle: "Deconstructs complex systems into fundamental physics, questions assumptions, challenges learners to eliminate waste.",
+    aiDisclaimer: "AI-generated mentor inspired by public engineering philosophy.",
   },
   {
     id: 2,
@@ -47,7 +51,11 @@ export const seedMentors = [
       tone: "measured"
     },
     bio: "AI mentor focused on product thinking, AI-first ecosystem strategy, and engineering leadership.",
-    personaPrompt: "You are an AI clone of Sundar Pichai. Your goal is to mentor software developers and future tech leaders. Speak with a calm, deeply thoughtful, highly structured manner. Focus on scalable systems, user empathy, AI-first architecture, and organizing information to empower everyone."
+    personaPrompt: "You are an AI-generated mentor inspired by Sundar Pichai. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with a calm, deeply thoughtful, highly structured manner. Focus on scalable systems, user empathy, AI-first architecture, and organizing information to empower everyone.",
+    styleDescription: "Calm, structured, highly articulate, user-empathy and ecosystem scale oriented.",
+    vocabulary: ["ecosystem", "scalable", "user empathy", "architecture", "thoughtful", "long-term value"],
+    teachingStyle: "Breaks concepts down into core architectural pillars, designs with empathy, values clarity and maintainability over complexity.",
+    aiDisclaimer: "AI-generated mentor inspired by public leadership philosophy.",
   },
   {
     id: 3,
@@ -69,7 +77,11 @@ export const seedMentors = [
       tone: "inspiring"
     },
     bio: "AI mentor teaching communication mastery, public speaking, empathy, and personal growth.",
-    personaPrompt: "You are an AI clone of Oprah Winfrey. Your goal is to guide students to find their authentic voice, speak with confidence, tell captivating stories, listen deeply, and build genuine rapport with any audience."
+    personaPrompt: "You are an AI-generated mentor inspired by Oprah Winfrey. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Guide students to find their authentic voice, speak with confidence, tell captivating stories, listen deeply, and build genuine rapport with any audience.",
+    styleDescription: "Warm, emotionally resonant, empathetic, inspiring, storytelling-driven.",
+    vocabulary: ["authentic voice", "presence", "resonance", "purpose", "connection", "intention"],
+    teachingStyle: "Empowers learners through self-reflection, storytelling frameworks, active listening, and authentic emotional connection.",
+    aiDisclaimer: "AI-generated mentor inspired by public communication mastery.",
   },
   {
     id: 4,
@@ -91,7 +103,11 @@ export const seedMentors = [
       tone: "intense"
     },
     bio: "AI mentor delivering GPU computing, neural networks, CUDA, and high-performance AI infrastructure.",
-    personaPrompt: "You are an AI clone of Jensen Huang. You wear the iconic leather jacket and are obsessed with accelerated computing, Moore's law limitations, CUDA, parallel processing, and building the infrastructure for the AI industrial revolution."
+    personaPrompt: "You are an AI-generated mentor inspired by Jensen Huang. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Focused on accelerated computing, Moore's law limitations, CUDA, parallel processing, and building the infrastructure for the AI industrial revolution.",
+    styleDescription: "Passionate, technically intense, parallel-computing and FLOPS oriented.",
+    vocabulary: ["accelerated computing", "CUDA", "tensor cores", "parallelism", "throughput", "pipeline"],
+    teachingStyle: "Challenges single-threaded thinking, analyzes hardware bottlenecks and memory bandwidth, teaches parallel computing from first principles.",
+    aiDisclaimer: "AI-generated mentor inspired by accelerated computing leadership.",
   },
   {
     id: 5,
@@ -113,7 +129,11 @@ export const seedMentors = [
       tone: "motivational"
     },
     bio: "AI mentor on mental toughness, fitness routines, high-pressure execution, and competitive excellence.",
-    personaPrompt: "You are an AI clone of Virat Kohli. Speak with passion, high energy, hunger for continuous self-improvement, and zero tolerance for excuses. Emphasize preparation, daily routine, overcoming failure, and staying calm in high-pressure chases."
+    personaPrompt: "You are an AI-generated mentor inspired by Virat Kohli. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with passion, high energy, hunger for continuous self-improvement, and zero tolerance for excuses. Emphasize preparation, daily routine, overcoming failure, and staying calm in high-pressure situations.",
+    styleDescription: "Energetic, direct, discipline-driven, uncompromising on work ethic.",
+    vocabulary: ["intent", "discipline", "routine", "reps", "execute", "no excuses"],
+    teachingStyle: "Instills rigorous daily practice habits, accountability, mental resilience during failure, and focused execution.",
+    aiDisclaimer: "AI-generated mentor inspired by athletic discipline and peak performance.",
   },
   {
     id: 6,
@@ -246,35 +266,50 @@ export const seedCourses = [
         title: "Variables, Memory & Core Data Types",
         duration: "18 min",
         completed: true,
-        script: "Welcome to Python! In this module, I'll walk you through how Python allocates memory dynamically, how variables act as pointers to objects, and why dynamic typing gives you incredible speed in prototyping."
+        script: "Welcome to Python! In this module, I'll walk you through how Python allocates memory dynamically, how variables act as pointers to objects, and why dynamic typing gives you incredible speed in prototyping.",
+        text: "Python variables do not store values directly; they store references to memory objects. In Python, integers, floats, strings, and tuples are immutable, whereas lists and dictionaries are mutable. Memory management is handled by automatic reference counting and a generational garbage collector.",
+        transcript: "Let's inspect how variables work under the hood. When you assign a = 42, Python allocates an integer object in heap memory and points reference a to it. If you reassign a, the pointer moves.",
+        pdfNotes: "Summary: Python variables are memory pointers. Primitive types are objects. Always understand mutability when passing objects into functions."
       },
       {
         id: 2,
         title: "Control Flow, Loops & Conditionals",
         duration: "22 min",
         completed: true,
-        script: "Loops are the engine of computation. Let's look at how for-loops iterate over iterables using Python's iterator protocol, and how list comprehensions make your code clean and performant."
+        script: "Loops are the engine of computation. Let's look at how for-loops iterate over iterables using Python's iterator protocol, and how list comprehensions make your code clean and performant.",
+        text: "Control flow in Python relies on indentation and the iterator protocol (__iter__ and __next__). List comprehensions and generator expressions provide high-speed, declarative data transformations without explicit loop overhead.",
+        transcript: "In this lecture, we examine why list comprehensions execute at C-level speed compared to traditional for-append loops.",
+        pdfNotes: "Cheat sheet: [x for x in data if condition]. Use generators (x for x in data) for massive datasets to prevent high RAM consumption."
       },
       {
         id: 3,
         title: "Functions, Scope & First-Class Citizens",
         duration: "25 min",
         completed: false,
-        script: "In Python, functions are first-class citizens. You can pass them as arguments, return them from other functions, and wrap them with decorators. Let's build reusable modular software."
+        script: "In Python, functions are first-class citizens. You can pass them as arguments, return them from other functions, and wrap them with decorators. Let's build reusable modular software.",
+        text: "First-class functions allow higher-order programming patterns. Python resolves variable scoping via the LEGB rule: Local, Enclosing, Global, and Built-in.",
+        transcript: "Let's explore decorators. A decorator is simply a function that takes another function as an argument and extends its behavior without modifying the original code.",
+        pdfNotes: "Key rule: LEGB scope resolution order. Master closures and functools.wraps for writing robust decorators."
       },
       {
         id: 4,
         title: "Object-Oriented Programming (OOP) in Python",
         duration: "30 min",
         completed: false,
-        script: "OOP allows us to model real-world domains. We'll explore classes, dunder methods like __init__ and __repr__, inheritance, and encapsulation."
+        script: "OOP allows us to model real-world domains. We'll explore classes, dunder methods like __init__ and __repr__, inheritance, and encapsulation.",
+        text: "Object-oriented design in Python uses explicit self parameter and magic dunder methods. Composition is strongly favored over deep inheritance hierarchies.",
+        transcript: "Classes serve as blueprints for domain objects. Dunder methods hook into Python's core language syntax, such as addition operators and string representation.",
+        pdfNotes: "Core OOP checklist: __init__, __str__, encapsulation, and multiple inheritance resolution via C3 linearization (MRO)."
       },
       {
         id: 5,
         title: "Build Your First Production Web Scraper",
         duration: "45 min",
         completed: false,
-        script: "Time to build! We will use requests and BeautifulSoup to scrape real-time market data, clean it with Python strings, and save it to structured JSON."
+        script: "Time to build! We will use requests and BeautifulSoup to scrape real-time market data, clean it with Python strings, and save it to structured JSON.",
+        text: "Building resilient web scrapers requires handling HTTP status codes, setting appropriate User-Agent headers, respecting robots.txt, and handling rate limits with exponential backoff.",
+        transcript: "In our hands-on lab, we fetch HTML pages, parse DOM trees using CSS selectors, extract structured fields, and persist clean data to JSON files.",
+        pdfNotes: "Web scraping guidelines: always check robots.txt, add retry logic with backoff, and use BeautifulSoup with lxml parser for maximum throughput."
       }
     ],
     status: "approved"
@@ -297,21 +332,30 @@ export const seedCourses = [
         title: "First Principles Thinking vs Analogy",
         duration: "20 min",
         completed: false,
-        script: "Don't reason by analogy! Boil things down to the most fundamental truths you can imagine and reason up from there. That is how we reduced the cost of rockets by 90%."
+        script: "Don't reason by analogy! Boil things down to the most fundamental truths you can imagine and reason up from there. That is how we reduced the cost of rockets by 90%.",
+        text: "First principles reasoning requires deconstructing any problem down to its atomic physical or mathematical constituents, discarding historical convention, and reasoning upwards from core axioms.",
+        transcript: "Most people reason by analogy: they do things because that is how it was done before. With first principles, you ask: what are the raw materials? What is the cost on the spot market?",
+        pdfNotes: "The 5-step engineering framework: 1. Make requirements less dumb. 2. Delete the part or process. 3. Simplify or optimize. 4. Accelerate cycle time. 5. Automate."
       },
       {
         id: 2,
         title: "Product-Market Fit & The Speed of Innovation",
         duration: "28 min",
         completed: false,
-        script: "The only thing that matters early on is the pace of innovation. A company is just a group of people organized to create a product. Make the feedback loop as short as possible."
+        script: "The only thing that matters early on is the pace of innovation. A company is just a group of people organized to create a product. Make the feedback loop as short as possible.",
+        text: "Pace of innovation is the only sustainable competitive advantage. Compress feedback cycles between customer telemetry, code deployment, and product iteration.",
+        transcript: "If your iteration cycle takes two weeks and your competitor iterates in two days, they will compound knowledge ten times faster than you.",
+        pdfNotes: "Metrics: iteration velocity, deployment frequency, customer feedback loop turnaround time."
       },
       {
         id: 3,
         title: "Scaling Manufacturing & Software Operations",
         duration: "35 min",
         completed: false,
-        script: "Prototypes are easy, production is hard. The factory is the product! Here is how to automate the pipeline and eliminate dumb requirements."
+        script: "Prototypes are easy, production is hard. The factory is the product! Here is how to automate the pipeline and eliminate dumb requirements.",
+        text: "Production scaling is an order of magnitude harder than prototype demonstration. Design for manufacturability and build automated testing pipelines early.",
+        transcript: "Anyone can build one working prototype. Designing the production machine that can output thousands of reliable units daily is 1000% harder.",
+        pdfNotes: "Factory and infrastructure rules: automate only after simplifying; never automate a dumb process."
       }
     ],
     status: "approved"

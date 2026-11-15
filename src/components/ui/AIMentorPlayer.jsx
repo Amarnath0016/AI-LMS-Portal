@@ -7,30 +7,31 @@ import {
   Mic,
   Sparkles,
   ChevronRight,
-  MessageSquare,
   Send,
   Loader2,
   BookOpen,
   HelpCircle,
   Gauge,
-  Bot
+  Bot,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { aiApi } from "@/api/endpoints";
 import { toast } from "sonner";
 
-export function AIMentorPlayer({ mentor, lesson, onComplete }) {
+export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [muted, setMuted] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [activeTab, setActiveTab] = useState("transcript"); // transcript | askMentor | details
-  
+  const [activeTab, setActiveTab] = useState("transcript"); // transcript | askMentor
+
   // Mentor Live Doubts
   const [question, setQuestion] = useState("");
   const [asking, setAsking] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
-  
+
   // Web Speech Synthesis
   const utteranceRef = useRef(null);
   const intervalRef = useRef(null);
@@ -50,7 +51,7 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
       case 3: // Oprah Winfrey
         return { pitch: 1.05, rate: 0.95 * playbackSpeed, voiceKeyword: "Samantha" };
       case 4: // Jensen Huang
-        return { pitch: 0.90, rate: 1.05 * playbackSpeed, voiceKeyword: "Fred" };
+        return { pitch: 0.9, rate: 1.05 * playbackSpeed, voiceKeyword: "Fred" };
       case 5: // Virat Kohli
         return { pitch: 1.0, rate: 1.05 * playbackSpeed, voiceKeyword: "Rishi" };
       default:
@@ -70,9 +71,10 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
 
     const voices = window.speechSynthesis.getVoices();
     if (voices.length > 0) {
-      const match = voices.find((v) =>
-        v.name.toLowerCase().includes(settings.voiceKeyword.toLowerCase())
-      ) || voices[0];
+      const match =
+        voices.find((v) =>
+          v.name.toLowerCase().includes(settings.voiceKeyword.toLowerCase())
+        ) || voices[0];
       if (match) utterance.voice = match;
     }
 
@@ -132,39 +134,86 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
     };
   }, [mentor?.id, lesson?.id]);
 
-  // Handle Asking Live Doubt to Celebrity AI Mentor
-  const handleAskMentor = async (e) => {
-    e.preventDefault();
-    if (!question.trim() || asking) return;
+  // Handle Asking Live Doubt to AI Mentor
+  const submitQuestion = async (userQ) => {
+    if (!userQ || asking) return;
 
-    const userQ = question.trim();
-    setQuestion("");
     const newHistory = [...chatHistory, { sender: "user", text: userQ }];
     setChatHistory(newHistory);
     setAsking(true);
 
+    // Format previous turns for backend
+    const formattedHistory = chatHistory
+      .filter((h) => h.sender === "user" || h.sender === "mentor")
+      .map((h) => ({
+        role: h.sender === "user" ? "user" : "model",
+        text: h.text,
+      }));
+
     try {
       const response = await aiApi.chat({
-        mentorId: mentor?.id || 1,
+        mentorId: mentor?.id || mentor?._id || 1,
+        courseId: courseId || lesson?.courseId,
         message: userQ,
-        courseContext: `${lesson?.title || "Course lesson"}: ${lessonScript}`,
+        history: formattedHistory,
       });
 
-      const reply = response.data?.data?.reply || response.data?.reply || "Focus on the core fundamentals and practice daily.";
-      setChatHistory([...newHistory, { sender: "mentor", text: reply }]);
+      const responseData = response.data?.data || response.data || {};
+      const reply = responseData.reply || "Focus on the core fundamentals and practice daily.";
+      const citations = responseData.citations || [];
+      const label = responseData.label || "AI-generated mentor";
 
-      // Speak reply if not muted
+      setChatHistory([
+        ...newHistory,
+        {
+          sender: "mentor",
+          text: reply,
+          citations,
+          label,
+        },
+      ]);
+
       if (!muted) {
         speakText(reply);
       }
-    } catch {
-      // Graceful local fallback if offline
-      const fallbackReply = `From a first-principles perspective, let's break down "${userQ}". What is the core constraint? Eliminate unnecessary steps and test your solution with small inputs first!`;
-      setChatHistory([...newHistory, { sender: "mentor", text: fallbackReply }]);
-      if (!muted) speakText(fallbackReply);
+    } catch (error) {
+      const status = error.response?.status;
+      const is429 = status === 429;
+      let errorMsg =
+        "The AI Mentor service is temporarily unavailable. Please retry in a moment.";
+
+      if (is429) {
+        errorMsg = "Daily AI mentor quota exceeded. Please try again tomorrow.";
+      } else if (error.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      }
+
+      setChatHistory([
+        ...newHistory,
+        {
+          sender: "error",
+          text: errorMsg,
+          retryable: !is429,
+          failedQuestion: userQ,
+        },
+      ]);
+      toast.error(errorMsg);
     } finally {
       setAsking(false);
     }
+  };
+
+  const handleAskMentor = (e) => {
+    e.preventDefault();
+    if (!question.trim()) return;
+    const q = question.trim();
+    setQuestion("");
+    submitQuestion(q);
+  };
+
+  const retryQuestion = (failedQ) => {
+    if (!failedQ) return;
+    submitQuestion(failedQ);
   };
 
   if (!mentor || !lesson) return null;
@@ -192,7 +241,7 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
           </div>
         )}
 
-        {/* Celebrity Avatar with Lip-Sync Waveform Effect */}
+        {/* Celebrity Avatar with Waveform Effect */}
         <div className="relative z-10 flex flex-col items-center gap-4">
           <div className="relative">
             <div
@@ -217,7 +266,7 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
             <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-upto-blue/20 px-3 py-1 text-xs font-semibold text-blue-300 border border-upto-blue/30">
                 <Sparkles className="h-3 w-3" />
-                Celebrity AI Persona
+                AI-Generated Persona
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
                 <Mic className="h-3 w-3" />
@@ -253,7 +302,8 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
             {/* Speed Selector */}
             <button
               onClick={() => {
-                const nextSpeed = playbackSpeed === 1 ? 1.25 : playbackSpeed === 1.25 ? 1.5 : 1;
+                const nextSpeed =
+                  playbackSpeed === 1 ? 1.25 : playbackSpeed === 1.25 ? 1.5 : 1;
                 setPlaybackSpeed(nextSpeed);
                 toast.info(`Playback speed set to ${nextSpeed}x`);
               }}
@@ -272,7 +322,11 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
               }}
               className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20"
             >
-              {muted ? <VolumeX className="h-4 w-4 text-red-400" /> : <Volume2 className="h-4 w-4" />}
+              {muted ? (
+                <VolumeX className="h-4 w-4 text-red-400" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
@@ -295,14 +349,18 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
         </div>
 
         {progress >= 100 && (
-          <Button variant="gradient" className="mt-4 w-full font-bold" onClick={onComplete}>
+          <Button
+            variant="gradient"
+            className="mt-4 w-full font-bold"
+            onClick={onComplete}
+          >
             Mark Lesson Complete (+50 XP)
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         )}
       </div>
 
-      {/* Interactive Tabs: Teleprompter Transcript / Ask Mentor Live / Lesson Overview */}
+      {/* Interactive Tabs: Transcript / Ask Mentor Live */}
       <div className="p-4 bg-upto-card">
         <div className="flex border-b border-gray-800 pb-3 gap-2">
           <button
@@ -339,7 +397,9 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between text-xs text-gray-400">
               <span>Synchronized AI Lecture Transcript</span>
-              <span className="text-[11px] text-emerald-400 font-semibold">● Live Audio Sync</span>
+              <span className="text-[11px] text-emerald-400 font-semibold">
+                ● Live Audio Sync
+              </span>
             </div>
             <div className="rounded-xl border border-gray-800 bg-upto-dark/60 p-4 text-sm leading-relaxed text-gray-300">
               <p className="whitespace-pre-line">{lessonScript}</p>
@@ -353,15 +413,15 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
             <div className="rounded-xl border border-blue-900/40 bg-blue-950/20 p-3 text-xs text-blue-300 flex items-center gap-2">
               <HelpCircle className="h-4 w-4 shrink-0 text-blue-400" />
               <span>
-                Ask any question about this lesson. <strong>{mentor.name}</strong> will answer in real-time using their philosophical perspective!
+                Ask questions grounded in this course syllabus. <strong>{mentor.name}</strong> will guide you step-by-step.
               </span>
             </div>
 
             {/* Chat Messages */}
-            <div className="max-h-60 overflow-y-auto space-y-3 pr-1">
+            <div className="max-h-64 overflow-y-auto space-y-3 pr-1">
               {chatHistory.length === 0 ? (
                 <div className="text-center py-6 text-xs text-gray-500">
-                  No questions asked yet. Ask {mentor.name.split(" ")[0]} anything!
+                  No questions asked yet. Ask {mentor.name.split(" ")[0]} anything about this lesson!
                 </div>
               ) : (
                 chatHistory.map((item, idx) => (
@@ -371,18 +431,63 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
                       item.sender === "user" ? "items-end" : "items-start"
                     }`}
                   >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
-                        item.sender === "user"
-                          ? "bg-upto-blue text-white rounded-br-none"
-                          : "bg-gray-800 text-gray-200 border border-gray-700 rounded-bl-none"
-                      }`}
-                    >
-                      <p className="font-semibold text-[10px] opacity-75 mb-1">
-                        {item.sender === "user" ? "You" : `${mentor.name} (AI Mentor)`}
-                      </p>
-                      <p className="whitespace-pre-line">{item.text}</p>
-                    </div>
+                    {item.sender === "user" ? (
+                      <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed bg-upto-blue text-white rounded-br-none shadow-sm">
+                        <p className="font-semibold text-[10px] opacity-75 mb-1">You</p>
+                        <p className="whitespace-pre-line">{item.text}</p>
+                      </div>
+                    ) : item.sender === "mentor" ? (
+                      <div className="max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed bg-gray-800 text-gray-200 border border-gray-700 rounded-bl-none shadow-sm">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <p className="font-semibold text-[11px] text-white">
+                            {mentor.name}
+                          </p>
+                          <span className="inline-flex items-center gap-1 rounded bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-300 border border-blue-500/20">
+                            <Sparkles className="h-2.5 w-2.5" />
+                            {item.label || "AI-generated mentor"}
+                          </span>
+                        </div>
+                        <p className="whitespace-pre-line">{item.text}</p>
+
+                        {/* Citations display */}
+                        {item.citations && item.citations.length > 0 && (
+                          <div className="mt-2.5 pt-2 border-t border-gray-700/60">
+                            <p className="text-[10px] font-semibold text-gray-400 mb-1">
+                              Lesson Citations:
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {item.citations.map((cite, cIdx) => (
+                                <span
+                                  key={cIdx}
+                                  className="inline-flex items-center gap-1 rounded bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-300 border border-blue-500/20"
+                                >
+                                  <BookOpen className="h-2.5 w-2.5" />
+                                  {cite.replace(/^\[Citation:\s*/, "").replace(/\]$/, "")}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Error message with Friendly Retry Button */
+                      <div className="max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed bg-red-950/40 text-red-200 border border-red-800/50 rounded-bl-none shadow-sm">
+                        <div className="flex items-center gap-1.5 mb-1 text-red-400 font-bold text-[10px]">
+                          <AlertTriangle className="h-3 w-3" />
+                          <span>Service Notice</span>
+                        </div>
+                        <p className="whitespace-pre-line">{item.text}</p>
+                        {item.retryable && (
+                          <button
+                            type="button"
+                            onClick={() => retryQuestion(item.failedQuestion)}
+                            className="mt-2.5 inline-flex items-center gap-1 rounded-lg bg-red-600/30 px-2.5 py-1 text-[11px] font-semibold text-red-100 hover:bg-red-600/50 border border-red-500/40 transition-colors"
+                          >
+                            <RefreshCw className="h-3 w-3" /> Retry Question
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -398,8 +503,16 @@ export function AIMentorPlayer({ mentor, lesson, onComplete }) {
                 disabled={asking}
                 className="flex-1 rounded-xl border border-gray-700 bg-upto-dark px-4 py-2.5 text-xs text-white placeholder-gray-500 focus:border-upto-blue focus:outline-none"
               />
-              <Button type="submit" variant="gradient" disabled={asking || !question.trim()}>
-                {asking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <Button
+                type="submit"
+                variant="gradient"
+                disabled={asking || !question.trim()}
+              >
+                {asking ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </div>

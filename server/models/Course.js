@@ -7,6 +7,9 @@ const lessonItemSchema = new mongoose.Schema(
     duration: { type: String, default: "15 min" },
     completed: { type: Boolean, default: false },
     script: { type: String, default: "" },
+    text: { type: String, default: "" },
+    transcript: { type: String, default: "" },
+    pdfNotes: { type: String, default: "" },
     videoUrl: { type: String, default: "" },
   },
   { _id: true }

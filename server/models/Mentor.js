@@ -22,6 +22,10 @@ const mentorSchema = new mongoose.Schema(
     },
     bio: { type: String, default: "" },
     personaPrompt: { type: String, required: true },
+    styleDescription: { type: String, default: "" },
+    vocabulary: [{ type: String }],
+    teachingStyle: { type: String, default: "" },
+    aiDisclaimer: { type: String, default: "AI-generated mentor inspired by public teaching philosophy." },
   },
   {
     timestamps: true,

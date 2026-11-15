@@ -16,3 +16,7 @@ export { default as ChallengeSubmission } from "./ChallengeSubmission.js";
 export { default as DailyChallenge } from "./DailyChallenge.js";
 export { default as InstructorApplication } from "./InstructorApplication.js";
 export { default as Wishlist } from "./Wishlist.js";
+export { default as LessonChunk } from "./LessonChunk.js";
+export { default as ChatSession } from "./ChatSession.js";
+export { default as LessonDraft } from "./LessonDraft.js";
+export { default as AIRequestLog } from "./AIRequestLog.js";

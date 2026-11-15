@@ -21,6 +21,7 @@ import {
   ForumComment,
   DailyChallenge,
 } from "../models/index.js";
+import { indexCourseLessonChunks } from "../utils/retrievalUtils.js";
 import {
   seedMentors,
   seedCourses,
@@ -141,8 +142,11 @@ export const seedDatabase = async () => {
         );
       }
     }
+
+    // Index lesson chunks for RAG grounding
+    await indexCourseLessonChunks(courseDoc);
   }
-  console.log(`✔ Seeded ${courseDocs.length} Courses with Lessons & Modules.`);
+  console.log(`✔ Seeded ${courseDocs.length} Courses with Lessons, Modules & RAG Chunks.`);
 
   // 4. Seed Quizzes
   console.log("\n[4/7] Seeding Quizzes...");
