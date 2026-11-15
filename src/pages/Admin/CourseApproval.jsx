@@ -1,21 +1,69 @@
-import { useState } from "react";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckCircle, XCircle, Clock, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/common/button";
 import { EmptyState, HeroPanel, StatusBadge } from "@/components/ui/dashboard";
-import { pendingCourses, getMentorById } from "@/store/mockData";
+import { courseApi, adminApi, mentorApi } from "@/api/endpoints";
+import { useApiQuery } from "@/hooks/useApi";
 
 export default function CourseApproval() {
-  const [pending, setPending] = useState(pendingCourses);
+  const [processingId, setProcessingId] = useState(null);
 
-  const approve = (id) => {
-    setPending((prev) => prev.filter((c) => c.id !== id));
-    toast.success("Course approved and published!");
+  const {
+    data: coursesData,
+    loading: coursesLoading,
+    error: coursesError,
+    refetch: refetchCourses,
+  } = useApiQuery(() => courseApi.getAll(), []);
+
+  const {
+    data: mentorsData,
+  } = useApiQuery(() => mentorApi.getAll(), []);
+
+  const mentors = useMemo(() => {
+    return Array.isArray(mentorsData) ? mentorsData : mentorsData?.data || [];
+  }, [mentorsData]);
+
+  const mentorMap = useMemo(() => {
+    const map = {};
+    mentors.forEach((m) => {
+      map[String(m._id)] = m;
+      if (m.id !== undefined) map[String(m.id)] = m;
+    });
+    return map;
+  }, [mentors]);
+
+  const pending = useMemo(() => {
+    const list = Array.isArray(coursesData) ? coursesData : coursesData?.data || [];
+    return list.filter((c) => c.status === "pending");
+  }, [coursesData]);
+
+  const approve = async (course) => {
+    const id = course._id || course.id;
+    setProcessingId(id);
+    try {
+      await adminApi.approveCourse(id);
+      toast.success(`Course "${course.title}" approved and published!`);
+      refetchCourses();
+    } catch (err) {
+      toast.error("Failed to approve course: " + (err.response?.data?.message || err.message));
+    } finally {
+      setProcessingId(null);
+    }
   };
 
-  const reject = (id) => {
-    setPending((prev) => prev.filter((c) => c.id !== id));
-    toast.error("Course rejected");
+  const reject = async (course) => {
+    const id = course._id || course.id;
+    setProcessingId(id);
+    try {
+      await adminApi.rejectCourse(id);
+      toast.error(`Course "${course.title}" rejected`);
+      refetchCourses();
+    } catch (err) {
+      toast.error("Failed to reject course: " + (err.response?.data?.message || err.message));
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   return (
@@ -24,29 +72,52 @@ export default function CourseApproval() {
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-upto-blue">Admin</p>
         <h1 className="mt-2 text-3xl font-black text-[hsl(var(--foreground))] sm:text-4xl">Course Approval</h1>
         <p className="mt-2 max-w-2xl text-muted">
-          Review, approve, or reject AI celebrity courses before they go live.
+          Review, approve, or reject AI celebrity courses before they go live on the platform.
         </p>
       </HeroPanel>
 
-      {pending.length === 0 ? (
+      {coursesLoading && (
+        <div className="flex h-48 flex-col items-center justify-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-upto-blue" />
+          <p className="text-sm text-muted">Checking pending course submissions...</p>
+        </div>
+      )}
+
+      {coursesError && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center my-6">
+          <AlertCircle className="mx-auto h-8 w-8 text-red-400 mb-2" />
+          <p className="font-semibold text-red-300">Failed to load courses</p>
+          <p className="text-sm text-red-400/80 mt-1">{coursesError}</p>
+          <Button variant="outline" className="mt-4" onClick={refetchCourses}>
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {!coursesLoading && !coursesError && pending.length === 0 && (
         <EmptyState
           icon={CheckCircle}
           title="All caught up"
-          description="No courses are pending approval right now."
+          description="No courses are pending approval right now in the database."
         />
-      ) : (
+      )}
+
+      {!coursesLoading && !coursesError && pending.length > 0 && (
         <div className="space-y-4">
           {pending.map((course) => {
-            const mentor = getMentorById(course.mentorId);
+            const courseId = course._id || course.id;
+            const mentor = mentorMap[String(course.mentorId)] || course.mentor;
+            const isProcessing = processingId === courseId;
+
             return (
-              <div key={course.id} className="app-card rounded-lg p-6">
+              <div key={courseId} className="app-card rounded-lg p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex gap-4">
                     <div
                       className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg text-lg font-black text-white"
-                      style={{ background: mentor?.accent }}
+                      style={{ background: mentor?.accent || "#3B82F6" }}
                     >
-                      {mentor?.initials}
+                      {mentor?.initials || "AI"}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -54,11 +125,11 @@ export default function CourseApproval() {
                           <Clock className="h-3 w-3" />
                           Pending
                         </StatusBadge>
-                        <span className="text-xs text-muted">{course.league}</span>
+                        <span className="text-xs text-muted">{course.league || "Professional Track"}</span>
                       </div>
                       <h3 className="mt-1 text-lg font-bold">{course.title}</h3>
                       <p className="text-sm text-muted">
-                        AI Mentor: {mentor?.name} · {course.level} · {course.duration}
+                        AI Mentor: {mentor?.name || "AI Expert"} · {course.level || "Beginner"} · {course.duration || "Self-paced"}
                       </p>
                       <p className="mt-2 max-w-xl text-sm text-muted">{course.description}</p>
                     </div>
@@ -67,13 +138,25 @@ export default function CourseApproval() {
                     <Button
                       variant="default"
                       size="sm"
-                      onClick={() => approve(course.id)}
-                      className="bg-green-600 hover:bg-green-700"
+                      disabled={isProcessing}
+                      onClick={() => approve(course)}
+                      className="bg-green-600 hover:bg-green-700 text-white"
                     >
-                      <CheckCircle className="mr-1.5 h-4 w-4" />
-                      Approve
+                      {isProcessing ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <CheckCircle className="mr-1.5 h-4 w-4" />
+                          Approve
+                        </>
+                      )}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => reject(course.id)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isProcessing}
+                      onClick={() => reject(course)}
+                    >
                       <XCircle className="mr-1.5 h-4 w-4" />
                       Reject
                     </Button>

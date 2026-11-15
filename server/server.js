@@ -30,6 +30,12 @@ import adminRoutes from "./routes/adminRoutes.js";
 import instructorRoutes from "./routes/instructorRoutes.js";
 import forumRoutes from "./routes/forumRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import leaderboardRoutes from "./routes/leaderboardRoutes.js";
+import { protect } from "./middleware/authMiddleware.js";
+import { getMyEnrollments, completeLesson } from "./controllers/courseController.js";
 
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
@@ -122,6 +128,14 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/instructor", instructorRoutes);
 app.use("/api/forum", forumRoutes);
 app.use("/api/certificates", certificateRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
+
+// Direct shortcuts for requirement endpoints
+app.get("/api/me/enrollments", protect, getMyEnrollments);
+app.post("/api/lessons/:id/complete", protect, completeLesson);
 
 // Error Handling Middlewares
 app.use(notFound);

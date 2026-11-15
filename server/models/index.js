@@ -15,3 +15,4 @@ export { default as Notification } from "./Notification.js";
 export { default as ChallengeSubmission } from "./ChallengeSubmission.js";
 export { default as DailyChallenge } from "./DailyChallenge.js";
 export { default as InstructorApplication } from "./InstructorApplication.js";
+export { default as Wishlist } from "./Wishlist.js";

@@ -35,6 +35,7 @@ import DailyChallengePage from "@/pages/DailyChallenge/DailyChallengePage";
 import StudyPlannerPage from "@/pages/StudyPlanner/StudyPlannerPage";
 import AchievementBadgesPage from "@/pages/AchievementBadges/AchievementBadgesPage";
 import CareerOptionsPage from "@/pages/CareerOptions/CareerOptionsPage";
+import VerifyCertificate from "@/pages/Certificates/VerifyCertificate";
 
 export default function AppRouter() {
   return (
@@ -46,6 +47,8 @@ export default function AppRouter() {
         <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
         <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
         <Route path="/verify-otp" element={<AuthLayout><OtpVerification /></AuthLayout>} />
+        <Route path="/verify/:code" element={<VerifyCertificate />} />
+        <Route path="/verify" element={<VerifyCertificate />} />
 
         <Route
           path="/courses"

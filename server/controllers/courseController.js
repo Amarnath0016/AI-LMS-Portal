@@ -4,6 +4,10 @@ import Mentor from "../models/Mentor.js";
 import User from "../models/User.js";
 import Enrollment from "../models/Enrollment.js";
 import LessonProgress from "../models/LessonProgress.js";
+import Wishlist from "../models/Wishlist.js";
+import Notification from "../models/Notification.js";
+import { computeUpdatedStreak } from "../utils/streakUtils.js";
+import { issueCertificateIfEligible } from "../utils/certificateUtils.js";
 
 const getCourseQuery = (id) => {
   if (mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === String(id)) {
@@ -49,7 +53,21 @@ export const getAllCourses = async (req, res) => {
 
     const courses = await Course.find(filter).sort({ createdAt: -1 });
 
-    return res.json({ success: true, count: courses.length, data: courses });
+    // Attach mentor metadata for frontend convenience
+    const allMentors = await Mentor.find();
+    const mentorMap = new Map();
+    for (const m of allMentors) {
+      mentorMap.set(String(m._id), m);
+      if (m.id !== undefined) mentorMap.set(String(m.id), m);
+    }
+
+    const enhancedCourses = courses.map((c) => {
+      const courseObj = c.toObject();
+      courseObj.mentor = mentorMap.get(String(c.mentorId)) || null;
+      return courseObj;
+    });
+
+    return res.json({ success: true, count: enhancedCourses.length, data: enhancedCourses });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -92,49 +110,241 @@ export const enrollCourse = async (req, res) => {
       return res.status(404).json({ success: false, message: "Course not found." });
     }
 
-    const userId = req.user?._id || req.user?.id;
-    let user = null;
-    if (mongoose.Types.ObjectId.isValid(userId)) {
-      user = await User.findById(userId);
-    }
-    if (!user && !isNaN(userId)) {
-      user = await User.findOne({ id: Number(userId) });
+    // Requirement: checks course exists and approved
+    if (course.status !== "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot enroll: Course is pending administrator approval.",
+      });
     }
 
+    // Requirement: payment / free check
+    const { paymentConfirmed, isPaid, paymentDetails } = req.body || {};
+    if (course.price > 0 && !paymentConfirmed && !isPaid && !paymentDetails) {
+      return res.status(402).json({
+        success: false,
+        message: `Payment required: Course enrollment fee is ${course.price}.`,
+        price: course.price,
+      });
+    }
+
+    const userId = req.user._id || req.user.id;
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found." });
     }
 
-    // Save enrollment with ObjectId references and compound unique index
-    try {
-      await Enrollment.findOneAndUpdate(
-        { userId: user._id, courseId: course._id },
-        {
-          $setOnInsert: {
-            userId: user._id,
-            courseId: course._id,
-            enrolledAt: new Date(),
-            progress: 0,
-            completed: false,
-          },
+    // Upsert Enrollment record
+    const enrollment = await Enrollment.findOneAndUpdate(
+      { userId: user._id, courseId: course._id },
+      {
+        $setOnInsert: {
+          userId: user._id,
+          courseId: course._id,
+          enrolledAt: new Date(),
+          progress: 0,
+          completed: false,
         },
-        { upsert: true, new: true }
-      );
-    } catch (e) {
-      // Ignore duplicate key error on upsert
-    }
+      },
+      { upsert: true, new: true }
+    );
 
-    // Keep user.enrolledCourses backwards compatible with numeric IDs / ObjectIds
+    // Keep user.enrolledCourses in sync
     const identifier = course.id !== undefined ? course.id : course._id;
     if (!user.enrolledCourses.some((c) => String(c) === String(identifier) || String(c) === String(course._id))) {
       user.enrolledCourses.push(identifier);
-      await user.save();
+    }
+
+    // Clean up wishlist if wishlisted
+    await Wishlist.deleteOne({ userId: user._id, courseId: course._id });
+    if (user.wishlist) {
+      user.wishlist = user.wishlist.filter(
+        (c) => String(c) !== String(identifier) && String(c) !== String(course._id)
+      );
+    }
+    await user.save();
+
+    // Create In-App Notification
+    await Notification.create({
+      userId: user._id,
+      title: "Enrolled in Course 🎓",
+      message: `You have successfully enrolled in "${course.title}". Start with module 1 now!`,
+      type: "info",
+      link: `/courses/${course.id || course._id}`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Enrolled in "${course.title}" successfully!`,
+      courseId: course.id || course._id,
+      enrollment,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getMyEnrollments = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const enrollments = await Enrollment.find({ userId }).sort({ enrolledAt: -1 });
+
+    const allCourses = await Course.find();
+    const allMentors = await Mentor.find();
+
+    const courseMap = new Map();
+    for (const c of allCourses) {
+      courseMap.set(String(c._id), c);
+      if (c.id !== undefined) courseMap.set(String(c.id), c);
+    }
+
+    const mentorMap = new Map();
+    for (const m of allMentors) {
+      mentorMap.set(String(m._id), m);
+      if (m.id !== undefined) mentorMap.set(String(m.id), m);
+    }
+
+    const data = enrollments.map((enr) => {
+      const course = courseMap.get(String(enr.courseId));
+      let mentor = null;
+      if (course?.mentorId) {
+        mentor = mentorMap.get(String(course.mentorId)) || null;
+      }
+      return {
+        _id: enr._id,
+        id: enr.id,
+        progress: enr.progress,
+        completed: enr.completed,
+        enrolledAt: enr.enrolledAt,
+        courseId: enr.courseId,
+        course: course ? { ...course.toObject(), mentor } : null,
+      };
+    });
+
+    return res.json({ success: true, count: data.length, data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const completeLesson = async (req, res) => {
+  try {
+    const { id } = req.params; // lessonId
+    const { courseId: explicitCourseId } = req.body || {};
+    const userId = req.user._id || req.user.id;
+
+    // Find course containing this lesson or matching explicitCourseId
+    let course = null;
+    if (explicitCourseId) {
+      course = await Course.findOne(getCourseQuery(explicitCourseId));
+    }
+    if (!course) {
+      course = await Course.findOne({
+        $or: [
+          { "lessons._id": mongoose.Types.ObjectId.isValid(id) ? id : null },
+          { "lessons.id": isNaN(id) ? id : Number(id) },
+        ],
+      });
+    }
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Associated course for lesson not found." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    // Check if lesson was already completed by this user (Idempotent requirement)
+    const existingProgress = await LessonProgress.findOne({
+      userId: user._id,
+      courseId: course._id,
+      lessonId: id,
+      completed: true,
+    });
+
+    const totalLessons = course.lessons?.length || 1;
+
+    if (existingProgress) {
+      const currentEnrollment = await Enrollment.findOne({ userId: user._id, courseId: course._id });
+      return res.json({
+        success: true,
+        message: "Lesson was already completed.",
+        progress: currentEnrollment?.progress || 100,
+        completed: true,
+        alreadyCompleted: true,
+        earnedXp: 0,
+        xpAwarded: 0,
+      });
+    }
+
+    // Mark lesson progress completed
+    await LessonProgress.findOneAndUpdate(
+      { userId: user._id, courseId: course._id, lessonId: id },
+      {
+        $set: {
+          userId: user._id,
+          courseId: course._id,
+          lessonId: id,
+          completed: true,
+          progress: 100,
+          completedAt: new Date(),
+        },
+      },
+      { upsert: true, new: true }
+    );
+
+    // Compute progress % server-side from completed lessons
+    const completedCount = await LessonProgress.countDocuments({
+      userId: user._id,
+      courseId: course._id,
+      completed: true,
+    });
+
+    const computedProgress = Math.min(100, Math.round((completedCount / totalLessons) * 100));
+    const isCompleted = computedProgress === 100;
+
+    // Update Enrollment
+    await Enrollment.findOneAndUpdate(
+      { userId: user._id, courseId: course._id },
+      {
+        $set: {
+          progress: computedProgress,
+          completed: isCompleted,
+          completedAt: isCompleted ? new Date() : null,
+        },
+      },
+      { upsert: true, new: true }
+    );
+
+    // Compute XP earned for lesson
+    const xpReward = Math.round((course.xp || 1000) / totalLessons);
+    user.xp = (user.xp || 0) + xpReward;
+
+    // Update server-side streaks
+    user.streak = computeUpdatedStreak(user.lastActiveAt, user.streak);
+    user.lastActiveAt = new Date();
+    await user.save();
+
+    // Check if certificate should be issued
+    let certificateIssued = false;
+    if (isCompleted) {
+      const certResult = await issueCertificateIfEligible(user._id, course._id);
+      certificateIssued = Boolean(certResult.eligible && !certResult.alreadyIssued);
     }
 
     return res.json({
       success: true,
-      message: `Enrolled in course #${course.id || course._id} successfully!`,
-      courseId: course.id || course._id,
+      message: `Lesson completed! +${xpReward} XP earned.`,
+      progress: computedProgress,
+      completedCount,
+      totalLessons,
+      earnedXp: xpReward,
+      xpAwarded: xpReward,
+      currentXp: user.xp,
+      currentStreak: user.streak,
+      certificateIssued,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
@@ -152,17 +362,13 @@ export const updateCourseProgress = async (req, res) => {
     }
 
     const userId = req.user?._id || req.user?.id;
-    let user = null;
-    if (mongoose.Types.ObjectId.isValid(userId)) {
-      user = await User.findById(userId);
-    }
-    if (!user && !isNaN(userId)) {
-      user = await User.findOne({ id: Number(userId) });
-    }
+    const user = await User.findById(userId);
 
     if (user) {
       const earnedXp = progress === 100 ? xpAward * 2 : xpAward;
       user.xp = (user.xp || 0) + earnedXp;
+      user.streak = computeUpdatedStreak(user.lastActiveAt, user.streak);
+      user.lastActiveAt = new Date();
       await user.save();
 
       // Track lesson progress
@@ -192,6 +398,10 @@ export const updateCourseProgress = async (req, res) => {
         },
         { upsert: true }
       );
+
+      if (Number(progress) === 100) {
+        await issueCertificateIfEligible(user._id, course._id);
+      }
     }
 
     return res.json({

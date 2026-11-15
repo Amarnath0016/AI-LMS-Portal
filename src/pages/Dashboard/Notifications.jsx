@@ -1,12 +1,24 @@
-import { useState } from "react";
-import { useAuthContext } from "@/store/AuthContext";
-import { Bell, BookOpen, Clock, Calendar, CheckCheck, Trash } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Bell, BookOpen, Clock, Calendar, CheckCheck, Trash2, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { HeroPanel, SectionCard, EmptyState } from "@/components/ui/dashboard";
+import { notificationApi } from "@/api/endpoints";
+import { useApiQuery } from "@/hooks/useApi";
+import { toast } from "sonner";
 
 export default function NotificationsPage() {
-  const { notifications, markNotificationsAsRead } = useAuthContext();
   const [filter, setFilter] = useState("All");
+
+  const {
+    data: notifsData,
+    loading,
+    error,
+    refetch,
+  } = useApiQuery(() => notificationApi.getAll(), []);
+
+  const notifications = useMemo(() => {
+    return Array.isArray(notifsData) ? notifsData : notifsData?.data || [];
+  }, [notifsData]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -14,6 +26,38 @@ export default function NotificationsPage() {
     if (filter === "Unread") return !n.read;
     return true;
   });
+
+  const markAllRead = async () => {
+    try {
+      await notificationApi.markAllRead();
+      toast.success("All notifications marked as read");
+      refetch();
+    } catch (err) {
+      toast.error("Failed to mark all as read: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const markRead = async (notif) => {
+    const id = notif._id || notif.id;
+    try {
+      await notificationApi.markRead(id);
+      refetch();
+    } catch {
+      // ignore
+    }
+  };
+
+  const deleteNotif = async (notif, e) => {
+    e.stopPropagation();
+    const id = notif._id || notif.id;
+    try {
+      await notificationApi.delete(id);
+      toast.success("Notification deleted");
+      refetch();
+    } catch (err) {
+      toast.error("Failed to delete notification: " + (err.response?.data?.message || err.message));
+    }
+  };
 
   const getIcon = (type) => {
     switch (type) {
@@ -49,7 +93,7 @@ export default function NotificationsPage() {
             </p>
           </div>
           {unreadCount > 0 && (
-            <Button variant="outline" size="sm" onClick={markNotificationsAsRead} className="gap-1.5 shrink-0 self-start md:self-center">
+            <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5 shrink-0 self-start md:self-center">
               <CheckCheck className="h-4 w-4" /> Mark all as read
             </Button>
           )}
@@ -73,7 +117,24 @@ export default function NotificationsPage() {
       </div>
 
       <SectionCard title={`Active Notifications (${filteredNotifications.length})`}>
-        {filteredNotifications.length === 0 ? (
+        {loading && (
+          <div className="flex h-36 flex-col items-center justify-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin text-upto-blue" />
+            <p className="text-xs text-muted">Loading notifications...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center my-2">
+            <AlertCircle className="mx-auto h-6 w-6 text-red-400 mb-1" />
+            <p className="text-xs font-semibold text-red-300">Failed to load notifications: {error}</p>
+            <Button variant="outline" size="sm" className="mt-2 text-xs" onClick={refetch}>
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {!loading && !error && filteredNotifications.length === 0 && (
           <EmptyState
             icon={Bell}
             title="All caught up!"
@@ -83,41 +144,65 @@ export default function NotificationsPage() {
                 : "Your notifications list is empty."
             }
           />
-        ) : (
-          <div className="space-y-4">
-            {filteredNotifications.map((notif) => (
-              <div
-                key={notif.id}
-                className={`flex items-start gap-4 rounded-xl border p-4 transition-all ${
-                  notif.read
-                    ? "border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 opacity-70"
-                    : "border-upto-blue/30 bg-upto-blue/5 shadow-sm shadow-blue-500/5"
-                }`}
-              >
-                {/* Icon wrapper */}
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${getToneClass(notif.type)}`}>
-                  {getIcon(notif.type)}
-                </div>
+        )}
 
-                {/* message text */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-extrabold text-[hsl(var(--foreground))] truncate">
-                      {notif.title}
-                    </h4>
-                    {!notif.read && (
-                      <span className="h-2 w-2 rounded-full bg-upto-blue animate-pulse" />
-                    )}
+        {!loading && !error && filteredNotifications.length > 0 && (
+          <div className="space-y-4">
+            {filteredNotifications.map((notif) => {
+              const notifId = notif._id || notif.id;
+              const formattedTime = notif.createdAt
+                ? new Date(notif.createdAt).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : notif.time || "Recently";
+
+              return (
+                <div
+                  key={notifId}
+                  onClick={() => !notif.read && markRead(notif)}
+                  className={`flex items-start gap-4 rounded-xl border p-4 transition-all cursor-pointer ${
+                    notif.read
+                      ? "border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 opacity-70"
+                      : "border-upto-blue/30 bg-upto-blue/5 shadow-sm shadow-blue-500/5"
+                  }`}
+                >
+                  {/* Icon wrapper */}
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${getToneClass(notif.type)}`}>
+                    {getIcon(notif.type)}
                   </div>
-                  <p className="mt-1 text-xs text-muted leading-relaxed">
-                    {notif.message}
-                  </p>
-                  <span className="mt-2 block text-[9px] font-bold text-muted uppercase">
-                    {notif.time}
-                  </span>
+
+                  {/* message text */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-extrabold text-[hsl(var(--foreground))] truncate">
+                        {notif.title}
+                      </h4>
+                      {!notif.read && (
+                        <span className="h-2 w-2 rounded-full bg-upto-blue animate-pulse" />
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-muted leading-relaxed">
+                      {notif.message}
+                    </p>
+                    <span className="mt-2 block text-[9px] font-bold text-muted uppercase">
+                      {formattedTime}
+                    </span>
+                  </div>
+
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => deleteNotif(notif, e)}
+                    className="p-1.5 text-muted hover:text-red-400 rounded transition-colors"
+                    title="Delete notification"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </SectionCard>

@@ -27,6 +27,8 @@ const userSchema = new mongoose.Schema(
       timezone: { type: String, default: "IST (UTC+5:30)" },
     },
     enrolledCourses: [{ type: mongoose.Schema.Types.Mixed }],
+    wishlist: [{ type: mongoose.Schema.Types.Mixed }],
+    lastActiveAt: { type: Date, default: Date.now },
     status: { type: String, default: "Active" },
     resetOtpHash: { type: String, default: null },
     resetOtpExpiresAt: { type: String, default: null },

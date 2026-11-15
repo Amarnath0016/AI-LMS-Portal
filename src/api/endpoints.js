@@ -17,9 +17,14 @@ export const authApi = {
 export const courseApi = {
   getAll: (params) => api.get("/courses", { params }),
   getById: (id) => api.get(`/courses/${id}`),
-  enroll: (id) => api.post(`/courses/${id}/enroll`),
+  enroll: (id, data = {}) => api.post(`/courses/${id}/enroll`, data),
   updateProgress: (id, data) => api.patch(`/courses/${id}/progress`, data),
   create: (data) => api.post("/courses", data),
+};
+
+export const enrollmentApi = {
+  getMyEnrollments: () => api.get("/me/enrollments"),
+  completeLesson: (lessonId, data = {}) => api.post(`/lessons/${lessonId}/complete`, data),
 };
 
 export const mentorApi = {
@@ -37,20 +42,48 @@ export const aiApi = {
 };
 
 export const quizApi = {
+  getLeagues: () => api.get("/quizzes/leagues"),
+  getMyAttempts: () => api.get("/quizzes/my-attempts"),
   get: (leagueId, partId) => api.get(`/quizzes/${leagueId}/${partId}`),
   submit: (data) => api.post("/quizzes/submit", data),
+  submitAttempt: (id, data) => api.post(`/quizzes/${id}/submit`, data),
 };
 
 export const forumApi = {
-  getAll: () => api.get("/forum"),
+  getAll: (params) => api.get("/forum", { params }),
+  getById: (id) => api.get(`/forum/${id}`),
   create: (data) => api.post("/forum", data),
   addComment: (id, data) => api.post(`/forum/${id}/comments`, data),
   upvote: (id) => api.patch(`/forum/${id}/upvote`),
+  delete: (id) => api.delete(`/forum/${id}`),
 };
 
 export const certificateApi = {
   getAll: () => api.get("/certificates"),
   verify: (code) => api.get(`/certificates/verify/${code}`),
+};
+
+export const wishlistApi = {
+  getAll: () => api.get("/wishlist"),
+  add: (courseId) => api.post(`/wishlist/${courseId}`),
+  remove: (courseId) => api.delete(`/wishlist/${courseId}`),
+};
+
+export const reviewApi = {
+  getAll: (params) => api.get("/reviews", { params }),
+  create: (courseId, data) => api.post(`/reviews/${courseId}`, data),
+  delete: (id) => api.delete(`/reviews/${id}`),
+};
+
+export const notificationApi = {
+  getAll: () => api.get("/notifications"),
+  markRead: (id) => api.patch(`/notifications/${id}/read`),
+  markAllRead: () => api.patch("/notifications/read-all"),
+  delete: (id) => api.delete(`/notifications/${id}`),
+};
+
+export const leaderboardApi = {
+  get: () => api.get("/leaderboard"),
 };
 
 export const adminApi = {

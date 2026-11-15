@@ -13,36 +13,44 @@ import {
 import { Navbar } from "@/components/ui/Navbar";
 import { Button } from "@/components/common/button";
 import { CourseCard } from "@/components/ui/CourseCard";
-import { celebrities, courses, leaderboard } from "@/store/mockData";
+import { useApiQuery } from "@/hooks/useApi";
+import { courseApi, mentorApi, leaderboardApi } from "@/api/endpoints";
 
 const stats = [
   { value: "50,000+", label: "Active Learners" },
-  { value: "120+", label: "AI Celebrity Mentors" },
+  { value: "10+", label: "AI Celebrity Mentors" },
   { value: "1,200+", label: "League Hours" },
   { value: "98%", label: "Satisfaction" },
 ];
 
 const features = [
-  { icon: Zap, title: "Earn XP", desc: "Gain experience with every quest" },
-  { icon: Trophy, title: "Climb Leaderboard", desc: "Win prizes in league competitions" },
-  { icon: Award, title: "Achievements", desc: "Proof of your learning journey" },
-  { icon: Flame, title: "Maintain Streaks", desc: "Stay at the top daily" },
-  { icon: Target, title: "Daily Challenges", desc: "Weekly and daily quests" },
-  { icon: Users, title: "Community", desc: "Connect with learners" },
+  { icon: Zap, title: "Earn XP", desc: "Gain experience with every quest and lesson" },
+  { icon: Trophy, title: "Climb Leaderboard", desc: "Win prizes in global league competitions" },
+  { icon: Award, title: "Achievements", desc: "Tamper-proof certificates with verification codes" },
+  { icon: Flame, title: "Maintain Streaks", desc: "Build consistent daily learning discipline" },
+  { icon: Target, title: "Daily Challenges", desc: "Weekly and daily programming quests" },
+  { icon: Users, title: "Community", desc: "Connect with learners in discussion forums" },
 ];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [activeCard, setActiveCard] = useState(0);
 
+  const { data: courses = [] } = useApiQuery(() => courseApi.getAll({ status: "approved" }), []);
+  const { data: mentors = [] } = useApiQuery(() => mentorApi.getAll(), []);
+  const { data: leaderboardData } = useApiQuery(() => leaderboardApi.get(), []);
+
+  const leaderboard = leaderboardData?.allTime || leaderboardData?.weekly || [];
+
   useEffect(() => {
+    if (mentors.length === 0) return;
     const timer = setInterval(() => {
-      setActiveCard((p) => (p + 1) % celebrities.length);
+      setActiveCard((p) => (p + 1) % mentors.length);
     }, 3500);
     return () => clearInterval(timer);
-  }, []);
+  }, [mentors.length]);
 
-  const approvedCourses = courses.filter((c) => c.status === "approved").slice(0, 6);
+  const approvedCourses = Array.isArray(courses) ? courses.slice(0, 6) : [];
 
   return (
     <div className="min-h-screen bg-upto-dark text-white">
@@ -60,209 +68,216 @@ export default function LandingPage() {
               AI-Powered Celebrity Learning
             </div>
 
-            <p className="text-sm font-bold uppercase tracking-[0.3em] text-upto-orange">
-              Transform Your Skill
-            </p>
-            <h1 className="mt-3 text-5xl font-black leading-[1.05] tracking-tight lg:text-6xl">
-              Learn From Your{" "}
-              <span className="upto-gradient-text">Favorite Celebrities</span>
+            <h1 className="text-5xl font-black leading-tight tracking-tight sm:text-6xl">
+              Learn from{" "}
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-orange-400 bg-clip-text text-transparent">
+                Celebrity AI Mentors
+              </span>
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-400">
-              Real celebrity faces &amp; voices. Expert AI content. Master skills through
-              gamified leagues — just like UptoSkills, powered by AI mentors.
+
+            <p className="mt-6 text-lg text-gray-400 leading-relaxed max-w-xl">
+              Study tech, engineering, and startups with AI clones of Elon Musk, Sundar Pichai,
+              Jensen Huang, and more. Authentic synthetic faces and voices powered by production AI.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button variant="gradient" size="lg" onClick={() => navigate("/register")}>
-                Start My Journey
-                <ChevronRight className="ml-1 h-5 w-5" />
+              <Button
+                variant="gradient"
+                size="lg"
+                onClick={() => navigate("/register")}
+                className="gap-2 shadow-lg shadow-blue-500/25"
+              >
+                Start Learning Free <ChevronRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate("/courses")}>
-                Explore Leagues
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => navigate("/mentors")}
+                className="border-gray-700 hover:border-gray-500 text-gray-200"
+              >
+                Meet the Mentors
               </Button>
             </div>
 
-            <div className="mt-12 grid grid-cols-2 gap-6 border-t border-gray-800 pt-8 sm:grid-cols-4">
+            <div className="mt-12 grid grid-cols-4 gap-4 border-t border-gray-800 pt-8">
               {stats.map((s) => (
                 <div key={s.label}>
-                  <p className="text-2xl font-extrabold text-upto-blue">{s.value}</p>
-                  <p className="mt-1 text-xs uppercase tracking-wider text-gray-500">{s.label}</p>
+                  <p className="text-xl font-black text-white">{s.value}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Celebrity carousel */}
-          <div className="relative flex flex-col items-center">
-            <div className="relative h-[420px] w-full max-w-sm">
-              {celebrities.slice(0, 4).map((c, i) => (
+          {/* Interactive Celebrity Carousel */}
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-upto-blue/20 to-orange-500/20 blur-2xl opacity-60" />
+
+            <div className="relative rounded-2xl border border-gray-800 bg-upto-card p-6 shadow-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-upto-blue">
+                  AI Celebrity Faculty
+                </span>
+                <span className="flex items-center gap-1.5 text-xs text-green-400">
+                  <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                  Live Voice &amp; Avatar Ready
+                </span>
+              </div>
+
+              {mentors.length > 0 && (
                 <div
-                  key={c.id}
-                  onClick={() => setActiveCard(i)}
-                  className="absolute left-1/2 w-72 -translate-x-1/2 cursor-pointer rounded-2xl border border-gray-700/50 p-6 shadow-2xl transition-all duration-500"
+                  className="rounded-xl p-6 transition-all duration-500 min-h-[280px] flex flex-col justify-between"
                   style={{
-                    background: c.color,
-                    transform: `translateX(-50%) rotate(${(i - activeCard) * 5}deg) translateY(${Math.abs(i - activeCard) * 12}px)`,
-                    zIndex: i === activeCard ? 10 : 5 - Math.abs(i - activeCard),
-                    opacity: i === activeCard ? 1 : 0.65,
+                    background: `linear-gradient(135deg, ${mentors[activeCard]?.color || "#1a1a2e"}, #0B0F19)`,
                   }}
                 >
-                  {i === activeCard && (
-                    <span className="absolute right-4 top-4 rounded-full bg-upto-blue/30 px-2.5 py-1 text-[10px] font-bold text-blue-200">
-                      AI MENTOR
+                  <div className="flex items-start justify-between">
+                    <div
+                      className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-black text-white shadow-lg ring-2 ring-white/20"
+                      style={{ background: mentors[activeCard]?.accent || "#2563EB" }}
+                    >
+                      {mentors[activeCard]?.initials || "EM"}
+                    </div>
+                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+                      {mentors[activeCard]?.tag || "Technology"}
                     </span>
-                  )}
-                  <div
-                    className="mb-4 flex h-14 w-14 items-center justify-center rounded-full text-lg font-black text-white"
-                    style={{ background: c.accent }}
-                  >
-                    {c.initials}
                   </div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-upto-orange">{c.tag}</p>
-                  <h3 className="mt-1 text-xl font-bold">{c.name}</h3>
-                  <p className="mt-1 text-sm text-gray-400">{c.subject}</p>
-                  <div className="mt-3 flex gap-3 text-xs text-gray-500">
-                    <span>⭐ {c.rating}</span>
-                    <span>👥 {c.students}</span>
+
+                  <div>
+                    <h3 className="text-2xl font-black">{mentors[activeCard]?.name}</h3>
+                    <p className="text-sm text-gray-300 mt-1 font-medium">{mentors[activeCard]?.subject}</p>
+                    <p className="mt-3 text-xs text-gray-400 italic line-clamp-2">
+                      &ldquo;{mentors[activeCard]?.bio}&rdquo;
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-white/10 pt-4 text-xs text-gray-400">
+                    <span>{mentors[activeCard]?.students || "50K"} students</span>
+                    <span>★ {mentors[activeCard]?.rating || "4.9"} rating</span>
+                    <span className="text-blue-300">{mentors[activeCard]?.courses || 5} courses</span>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="mt-6 flex gap-2">
-              {celebrities.slice(0, 4).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveCard(i)}
-                  className={`h-2 rounded-full transition-all ${
-                    i === activeCard ? "w-6 bg-upto-blue" : "w-2 bg-gray-700"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+              )}
 
-      {/* How it works */}
-      <section className="border-t border-gray-800/60 py-24">
-        <div className="mx-auto max-w-7xl px-4 lg:px-6">
-          <div className="text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-upto-orange">The Magic</p>
-            <h2 className="mt-3 text-4xl font-black">How AI Celebrity Learning Works</h2>
-            <p className="mx-auto mt-4 max-w-xl text-gray-400">
-              Celebrity appearance + voice clone. Expert-crafted AI curriculum. Gamified UptoSkills experience.
-            </p>
-          </div>
-
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { step: "01", icon: "🎭", title: "Celebrity AI Clone", desc: "Advanced AI recreates celebrity faces and voice patterns for an immersive experience." },
-              { step: "02", icon: "🧠", title: "Expert AI Content", desc: "Subject matter experts craft every lesson. The AI mentor delivers verified knowledge." },
-              { step: "03", icon: "🎯", title: "Gamified Leagues", desc: "Earn XP, climb leaderboards, and compete in leagues — the UptoSkills way." },
-              { step: "04", icon: "🏆", title: "Earn & Grow", desc: "Complete courses, earn certificates, and unlock real career opportunities." },
-            ].map((item) => (
-              <div key={item.step} className="relative rounded-2xl border border-gray-800 bg-upto-card p-6">
-                <span className="absolute right-5 top-5 text-5xl font-black text-gray-800">{item.step}</span>
-                <div className="text-4xl">{item.icon}</div>
-                <h3 className="mt-4 text-lg font-bold">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-gray-400">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Learn Compete Win */}
-      <section className="border-t border-gray-800/60 py-24">
-        <div className="mx-auto max-w-7xl px-4 lg:px-6">
-          <div className="text-center">
-            <h2 className="text-4xl font-black">
-              Learn. <span className="text-upto-blue">Compete.</span>{" "}
-              <span className="text-upto-orange">Win.</span>
-            </h2>
-            <p className="mt-3 text-gray-400">
-              Join 50,000+ learners earning XP, unlocking achievements, and winning real rewards
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-8 lg:grid-cols-2">
-            <div className="rounded-2xl border border-gray-800 bg-upto-card p-6">
-              <h3 className="mb-4 text-lg font-bold">Top Learners</h3>
-              <div className="space-y-3">
-                {leaderboard.map((l) => (
-                  <div key={l.rank} className="flex items-center gap-4 rounded-xl bg-upto-dark p-3">
-                    <span className="w-6 text-center text-sm font-bold text-gray-500">#{l.rank}</span>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full upto-gradient text-xs font-bold">
-                      {l.initials}
-                    </div>
-                    <span className="flex-1 font-medium">{l.name}</span>
-                    <span className="text-sm font-bold text-upto-orange">{l.xp.toLocaleString()} XP</span>
-                  </div>
+              {/* Dots */}
+              <div className="mt-4 flex justify-center gap-2">
+                {mentors.slice(0, 8).map((m, i) => (
+                  <button
+                    key={m.id || m._id || i}
+                    onClick={() => setActiveCard(i)}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === activeCard ? "w-6 bg-upto-blue" : "w-1.5 bg-gray-700"
+                    }`}
+                  />
                 ))}
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              {features.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="rounded-2xl border border-gray-800 bg-upto-card p-4">
-                  <Icon className="h-6 w-6 text-upto-blue" />
-                  <h4 className="mt-3 text-sm font-bold">{title}</h4>
-                  <p className="mt-1 text-xs text-gray-500">{desc}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Leagues */}
-      <section className="border-t border-gray-800/60 py-24">
+      {/* Featured Courses */}
+      <section className="py-20 border-t border-gray-800">
         <div className="mx-auto max-w-7xl px-4 lg:px-6">
-          <div className="flex items-end justify-between">
+          <div className="flex items-end justify-between mb-12">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-upto-orange">Explore Leagues</p>
-              <h2 className="mt-2 text-4xl font-black">Featured AI Courses</h2>
+              <p className="text-xs font-bold uppercase tracking-wider text-upto-orange">Curriculum</p>
+              <h2 className="mt-2 text-3xl font-black">Featured Courses</h2>
             </div>
-            <Button variant="ghost" onClick={() => navigate("/courses")}>
-              View All →
+            <Button
+              variant="outline"
+              onClick={() => navigate("/courses")}
+              className="border-gray-700 text-gray-300 hover:text-white"
+            >
+              View All Courses →
             </Button>
           </div>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {approvedCourses.map((course) => (
-              <CourseCard key={course.id} course={course} />
+              <CourseCard key={course.id || course._id} course={course} mentors={mentors} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="border-t border-gray-800/60 py-24">
-        <div className="mx-auto max-w-3xl px-4 text-center lg:px-6">
-          <h2 className="text-4xl font-black">
-            Let&apos;s Make <span className="upto-gradient-text">Freshers Employable</span>
-          </h2>
-          <p className="mt-4 text-lg text-gray-400">
-            Start your AI celebrity learning journey today. Free leagues available.
-          </p>
-          <Button variant="gradient" size="lg" className="mt-8" onClick={() => navigate("/register")}>
-            Start My Journey →
-          </Button>
+      {/* Features Grid */}
+      <section className="py-20 bg-upto-card/30 border-t border-gray-800">
+        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <p className="text-xs font-bold uppercase tracking-wider text-upto-blue">Gamification</p>
+            <h2 className="mt-2 text-3xl font-black">Learn Like You Play</h2>
+            <p className="mt-3 text-gray-400">
+              XP, streaks, global leaderboards, and verified certificates transform online learning into an addictive adventure.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="rounded-2xl border border-gray-800 bg-upto-card p-6 hover:border-gray-700 transition-all"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-upto-blue/10 text-upto-blue mb-4">
+                  <f.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-lg">{f.title}</h3>
+                <p className="mt-2 text-sm text-gray-400">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Leaderboard Preview */}
+      <section className="py-20 border-t border-gray-800">
+        <div className="mx-auto max-w-7xl px-4 lg:px-6">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <p className="text-xs font-bold uppercase tracking-wider text-upto-orange">Global Rankings</p>
+            <h2 className="mt-2 text-3xl font-black">Top Performers</h2>
+          </div>
+
+          <div className="max-w-2xl mx-auto rounded-2xl border border-gray-800 bg-upto-card overflow-hidden">
+            {leaderboard.slice(0, 5).map((l, i) => (
+              <div
+                key={l.id || l.name || i}
+                className="flex items-center justify-between p-4 border-b border-gray-800/50 last:border-0 hover:bg-gray-800/30 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <span
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+                      i === 0
+                        ? "bg-yellow-500/20 text-yellow-400 ring-1 ring-yellow-500/40"
+                        : i === 1
+                        ? "bg-gray-400/20 text-gray-300 ring-1 ring-gray-400/40"
+                        : i === 2
+                        ? "bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/40"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    #{l.rank || i + 1}
+                  </span>
+                  <div>
+                    <p className="font-bold text-sm">{l.name}</p>
+                    <p className="text-xs text-gray-500">{l.title || "UptoSkills Scholar"}</p>
+                  </div>
+                </div>
+                <span className="flex items-center gap-1.5 text-sm font-bold text-upto-orange">
+                  <Zap className="h-4 w-4" />
+                  {(l.xp || 0).toLocaleString()} XP
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-12">
-        <div className="mx-auto max-w-7xl px-4 lg:px-6">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg upto-gradient text-sm font-black">U</div>
-              <span className="font-extrabold">Upto<span className="text-upto-orange">Skills</span></span>
-            </div>
-            <p className="text-xs text-gray-500">
-              © 2026 UptoSkills. AI-generated celebrity content for educational purposes.
-            </p>
-          </div>
-        </div>
+      <footer className="border-t border-gray-800 py-12 text-center text-xs text-gray-500">
+        <p>© 2026 UptoSkills AI LMS. Final Year Engineering Project. All rights reserved.</p>
+        <p className="mt-1">
+          Celebrity personas are synthetic AI representations designed for educational inspiration.
+        </p>
       </footer>
     </div>
   );

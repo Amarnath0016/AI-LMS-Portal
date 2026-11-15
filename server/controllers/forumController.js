@@ -11,8 +11,35 @@ const getPostQuery = (id) => {
 
 export const getForumPosts = async (req, res) => {
   try {
-    const posts = await ForumPost.find().sort({ createdAt: -1 });
+    const { category, search } = req.query;
+    const filter = {};
+
+    if (category && category !== "All") {
+      filter.category = category;
+    }
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search.trim(), $options: "i" } },
+        { content: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
+
+    const posts = await ForumPost.find(filter).sort({ createdAt: -1 });
     return res.json({ success: true, count: posts.length, data: posts });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getForumPostById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await ForumPost.findOne(getPostQuery(id));
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found." });
+    }
+    return res.json({ success: true, data: post });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -21,13 +48,17 @@ export const getForumPosts = async (req, res) => {
 export const createForumPost = async (req, res) => {
   try {
     const { title, category, content } = req.body;
+    if (!title?.trim() || !content?.trim()) {
+      return res.status(400).json({ success: false, message: "Title and content are required." });
+    }
+
     const author = req.user?.name || "Student Learner";
     const authorId = req.user?._id || req.user?.id || 1;
 
     const newPost = await ForumPost.create({
-      title,
+      title: title.trim(),
       category: category || "General",
-      content,
+      content: content.trim(),
       author,
       authorId,
       upvotes: 0,
@@ -45,6 +76,11 @@ export const addForumComment = async (req, res) => {
   try {
     const { id } = req.params;
     const { content } = req.body;
+
+    if (!content?.trim()) {
+      return res.status(400).json({ success: false, message: "Comment content is required." });
+    }
+
     const author = req.user?.name || "Student Learner";
     const authorId = req.user?._id || req.user?.id || null;
 
@@ -56,19 +92,19 @@ export const addForumComment = async (req, res) => {
     const newComment = {
       author,
       authorId,
-      content,
+      content: content.trim(),
       timestamp: new Date(),
     };
 
     post.comments.push(newComment);
     await post.save();
 
-    // Also persist in normalized ForumComment collection
+    // Persist in normalized collection
     await ForumComment.create({
       postId: post._id,
       author,
       authorId,
-      content,
+      content: content.trim(),
       timestamp: newComment.timestamp,
     });
 
@@ -92,6 +128,35 @@ export const upvoteForumPost = async (req, res) => {
     }
 
     return res.json({ success: true, upvotes: post.upvotes });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteForumPost = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await ForumPost.findOne(getPostQuery(id));
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Post not found." });
+    }
+
+    // Ownership check: only author or admin can delete
+    const isOwner = String(post.authorId) === String(req.user?._id || req.user?.id);
+    const isAdmin = req.user?.role === "admin";
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden: You are not authorized to delete this discussion.",
+      });
+    }
+
+    await ForumPost.findByIdAndDelete(post._id);
+    await ForumComment.deleteMany({ postId: post._id });
+
+    return res.json({ success: true, message: "Discussion deleted successfully." });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

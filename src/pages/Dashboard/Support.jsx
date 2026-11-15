@@ -14,7 +14,14 @@ const faqs = [
 ];
 
 export default function SupportPage() {
-  const { supportMessages, addSupportMessage } = useAuthContext();
+  const [supportMessages, setSupportMessages] = useState([
+    {
+      id: 1,
+      sender: "bot",
+      text: "Hello! How can I help you today with your courses, quizzes, or account?",
+      time: "Just now",
+    },
+  ]);
   const [openFaq, setOpenFaq] = useState(null);
   
   // Issue reporting states
@@ -35,6 +42,22 @@ export default function SupportPage() {
     if (!reportDesc.trim()) return;
     toast.success("Issue submitted! Ticket ID: #UPTO-" + Math.floor(100000 + Math.random() * 900000));
     setReportDesc("");
+  };
+
+  const addSupportMessage = (text) => {
+    const userMsg = { id: Date.now(), sender: "user", text, time: "Just now" };
+    setSupportMessages((prev) => [...prev, userMsg]);
+    setTimeout(() => {
+      setSupportMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: "bot",
+          text: "Thank you for reaching out! Our AI support agent is investigating your request.",
+          time: "Just now",
+        },
+      ]);
+    }, 600);
   };
 
   const handleSendMessage = (e) => {

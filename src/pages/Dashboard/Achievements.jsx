@@ -4,6 +4,9 @@ import { Button } from "@/components/common/button";
 import { HeroPanel, SectionCard } from "@/components/ui/dashboard";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { certificateApi } from "@/api/endpoints";
+import { useApiQuery } from "@/hooks/useApi";
+import { useMemo } from "react";
 
 const availableBadges = [
   { id: "streak-3", title: "Streak Champion", desc: "Maintained a 7-day study streak.", icon: Trophy, color: "from-amber-500 to-orange-600", unlocked: true },
@@ -24,8 +27,13 @@ const milestones = [
 ];
 
 export default function AchievementsPage() {
-  const { certificates } = useAuthContext();
+  const { user } = useAuthContext();
   const navigate = useNavigate();
+
+  const { data: certsData } = useApiQuery(() => certificateApi.getAll(), []);
+  const certificates = useMemo(() => {
+    return Array.isArray(certsData) ? certsData : certsData?.data || [];
+  }, [certsData]);
 
   const handleShare = (certTitle) => {
     toast.success(`Share link generated for "${certTitle}" certificate!`);
