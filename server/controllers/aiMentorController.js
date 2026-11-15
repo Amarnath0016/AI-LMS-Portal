@@ -5,6 +5,7 @@ import {
   evaluateCodeSnippet,
 } from "../services/aiMentorService.js";
 import {
+  generateLessonAudio,
   getCelebrityVoiceConfig,
   synthesizeSpeechElevenLabs,
 } from "../services/voiceSynthesisService.js";
@@ -13,6 +14,34 @@ import {
   getAvatarStreamingConfig,
 } from "../services/avatarAnimationService.js";
 import LessonDraft from "../models/LessonDraft.js";
+import Mentor from "../models/Mentor.js";
+import mongoose from "mongoose";
+
+export const handleLessonAudioGeneration = async (req, res) => {
+  try {
+    const { lessonId } = req.params;
+    const { mentorId } = req.body || {};
+
+    if (!lessonId) {
+      return res.status(400).json({ success: false, message: "Lesson ID is required." });
+    }
+
+    const audioData = await generateLessonAudio({
+      lessonId,
+      mentorId,
+    });
+
+    return res.json({
+      success: true,
+      data: audioData,
+    });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ success: false, message: error.message });
+    }
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const handleMentorChat = async (req, res) => {
   try {
@@ -147,8 +176,36 @@ export const handleCodeEvaluation = async (req, res) => {
 export const handleGetVoiceProfile = async (req, res) => {
   try {
     const { mentorId } = req.params;
-    const config = getCelebrityVoiceConfig(Number(mentorId));
-    return res.json({ success: true, data: config });
+    const isOid =
+      mentorId &&
+      mongoose.Types.ObjectId.isValid(mentorId) &&
+      String(new mongoose.Types.ObjectId(mentorId)) === String(mentorId);
+    const mentor =
+      (await Mentor.findOne(isOid ? { _id: mentorId } : { id: isNaN(mentorId) ? mentorId : Number(mentorId) })) ||
+      (await Mentor.findOne({ id: 1 })) ||
+      (await Mentor.findOne());
+
+    if (!mentor) {
+      return res.status(404).json({ success: false, message: "Mentor not found." });
+    }
+
+    const voiceSettings = mentor.voiceSettings || {};
+    return res.json({
+      success: true,
+      data: {
+        mentorId: mentor._id || mentor.id,
+        mentorName: mentor.name,
+        pitch: voiceSettings.pitch ?? 1.0,
+        rate: voiceSettings.rate ?? 1.0,
+        voiceName: voiceSettings.voiceName || "en-US-Neural2-D",
+        elevenVoiceId: voiceSettings.elevenVoiceId || "",
+        tone: voiceSettings.tone || "measured",
+        provider: voiceSettings.provider || "google-tts",
+        isLicensedClone: Boolean(voiceSettings.isLicensedClone),
+        consentNotice: voiceSettings.consentNotice || "Authorized pedagogical voice profile.",
+        voiceKeyword: voiceSettings.voiceKeyword || "Google US English",
+      },
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
@@ -35,15 +36,20 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
-import { getMyEnrollments, completeLesson } from "./controllers/courseController.js";
+import {
+  getMyEnrollments,
+  completeLesson,
+  saveLessonPlaybackPosition,
+  getLessonPlaybackPosition,
+} from "./controllers/courseController.js";
 
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Helmet HTTP headers security
-app.use(helmet());
+// Helmet HTTP headers security with cross-origin audio streaming support
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
 // Cookie parser for secure httpOnly refresh tokens
 app.use(cookieParser());
@@ -136,6 +142,25 @@ app.use("/api/leaderboard", leaderboardRoutes);
 // Direct shortcuts for requirement endpoints
 app.get("/api/me/enrollments", protect, getMyEnrollments);
 app.post("/api/lessons/:id/complete", protect, completeLesson);
+app.post("/api/lessons/:id/position", protect, saveLessonPlaybackPosition);
+app.get("/api/lessons/:id/position", protect, getLessonPlaybackPosition);
+
+// Static Audio Cache for Real TTS Playback
+const audioCacheDir = path.resolve(__dirname, "public/audio/cache");
+if (!fs.existsSync(audioCacheDir)) {
+  fs.mkdirSync(audioCacheDir, { recursive: true });
+}
+app.use("/api/ai/audio-files", express.static(audioCacheDir));
+app.get("/api/ai/audio-files/:filename", (req, res) => {
+  const filePath = path.join(audioCacheDir, req.params.filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ success: false, message: "Audio file not found." });
+  }
+  res.setHeader("Content-Type", req.params.filename.endsWith(".mp3") ? "audio/mpeg" : "audio/wav");
+  res.setHeader("Accept-Ranges", "bytes");
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  fs.createReadStream(filePath).pipe(res);
+});
 
 // Error Handling Middlewares
 app.use(notFound);

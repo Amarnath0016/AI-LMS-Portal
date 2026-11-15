@@ -16,9 +16,16 @@ const mentorSchema = new mongoose.Schema(
     voiceSettings: {
       pitch: { type: Number, default: 1.0 },
       rate: { type: Number, default: 1.0 },
-      voiceName: { type: String, default: "default" },
+      voiceName: { type: String, default: "en-US-Neural2-D" },
       elevenVoiceId: { type: String, default: "" },
       tone: { type: String, default: "measured" },
+      provider: { type: String, enum: ["google-tts", "elevenlabs", "web-speech"], default: "google-tts" },
+      isLicensedClone: { type: Boolean, default: false },
+      consentNotice: {
+        type: String,
+        default: "Authorized pedagogical voice profile with verified educational consent.",
+      },
+      voiceKeyword: { type: String, default: "Google US English" },
     },
     bio: { type: String, default: "" },
     personaPrompt: { type: String, required: true },

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   handleMentorChat,
+  handleLessonAudioGeneration,
   handleLectureGeneration,
   handleGetLessonDrafts,
   handlePublishLessonDraft,
@@ -16,6 +17,9 @@ const router = express.Router();
 
 // Chat with AI Mentor (authenticated students, instructors, admins)
 router.post("/chat", protect, handleMentorChat);
+
+// Lesson real TTS audio generation per script segment with disk caching
+router.post("/lessons/:lessonId/audio", protect, handleLessonAudioGeneration);
 
 // Lesson generation: Instructors and Admins only
 router.post(

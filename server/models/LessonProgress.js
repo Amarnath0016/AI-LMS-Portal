@@ -6,6 +6,7 @@ const lessonProgressSchema = new mongoose.Schema(
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true, index: true },
     lessonId: { type: mongoose.Schema.Types.Mixed, required: true },
     progress: { type: Number, default: 0, min: 0, max: 100 },
+    playbackPositionSeconds: { type: Number, default: 0 },
     completed: { type: Boolean, default: false },
     completedAt: { type: Date, default: null },
   },

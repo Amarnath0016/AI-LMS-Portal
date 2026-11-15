@@ -25,6 +25,9 @@ export const courseApi = {
 export const enrollmentApi = {
   getMyEnrollments: () => api.get("/me/enrollments"),
   completeLesson: (lessonId, data = {}) => api.post(`/lessons/${lessonId}/complete`, data),
+  savePlaybackPosition: (lessonId, data) => api.post(`/lessons/${lessonId}/position`, data),
+  getPlaybackPosition: (lessonId, courseId) =>
+    api.get(`/lessons/${lessonId}/position`, { params: { courseId } }),
 };
 
 export const mentorApi = {
@@ -34,6 +37,7 @@ export const mentorApi = {
 
 export const aiApi = {
   chat: (data) => api.post("/ai/chat", data),
+  getLessonAudio: (lessonId, data = {}) => api.post(`/ai/lessons/${lessonId}/audio`, data),
   generateLecture: (data) => api.post("/ai/generate-lecture", data),
   getDrafts: (courseId) => api.get(`/ai/courses/${courseId}/drafts`),
   publishDraft: (draftId) => api.patch(`/ai/drafts/${draftId}/publish`),

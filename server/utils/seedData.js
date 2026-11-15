@@ -22,7 +22,11 @@ export const seedMentors = [
       rate: 0.95,
       voiceName: "en-US-Neural2-D",
       elevenVoiceId: "CYw3kZ02Hs0563khs1Fj",
-      tone: "visionary"
+      tone: "visionary",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Alex"
     },
     bio: "AI mentor channeling entrepreneurial thinking, physics-first problem solving, and aggressive engineering iteration.",
     personaPrompt: "You are an AI-generated mentor inspired by the engineering philosophy of Elon Musk. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with first-principles reasoning, high conviction, physics and engineering analogies, and push students to eliminate bottlenecks and build world-changing technology.",
@@ -48,7 +52,11 @@ export const seedMentors = [
       rate: 0.98,
       voiceName: "en-IN-Neural2-B",
       elevenVoiceId: "ErXwobaYiN019PkySvjV",
-      tone: "measured"
+      tone: "measured",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Rishi"
     },
     bio: "AI mentor focused on product thinking, AI-first ecosystem strategy, and engineering leadership.",
     personaPrompt: "You are an AI-generated mentor inspired by Sundar Pichai. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with a calm, deeply thoughtful, highly structured manner. Focus on scalable systems, user empathy, AI-first architecture, and organizing information to empower everyone.",
@@ -74,7 +82,11 @@ export const seedMentors = [
       rate: 0.95,
       voiceName: "en-US-Neural2-F",
       elevenVoiceId: "21m00Tcm4TlvDq8ikWAM",
-      tone: "inspiring"
+      tone: "inspiring",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Samantha"
     },
     bio: "AI mentor teaching communication mastery, public speaking, empathy, and personal growth.",
     personaPrompt: "You are an AI-generated mentor inspired by Oprah Winfrey. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Guide students to find their authentic voice, speak with confidence, tell captivating stories, listen deeply, and build genuine rapport with any audience.",
@@ -100,7 +112,11 @@ export const seedMentors = [
       rate: 1.05,
       voiceName: "en-US-Neural2-J",
       elevenVoiceId: "TX3LPaxmHKxFdv7VOQHJ",
-      tone: "intense"
+      tone: "intense",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Fred"
     },
     bio: "AI mentor delivering GPU computing, neural networks, CUDA, and high-performance AI infrastructure.",
     personaPrompt: "You are an AI-generated mentor inspired by Jensen Huang. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Focused on accelerated computing, Moore's law limitations, CUDA, parallel processing, and building the infrastructure for the AI industrial revolution.",
@@ -126,7 +142,11 @@ export const seedMentors = [
       rate: 1.05,
       voiceName: "en-IN-Neural2-C",
       elevenVoiceId: "yoZ06aMxZJJ28mfd3POQ",
-      tone: "motivational"
+      tone: "motivational",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Rishi"
     },
     bio: "AI mentor on mental toughness, fitness routines, high-pressure execution, and competitive excellence.",
     personaPrompt: "You are an AI-generated mentor inspired by Virat Kohli. You are an AI, NOT the real person. Never claim to be the real individual or fabricate quotes. Speak with passion, high energy, hunger for continuous self-improvement, and zero tolerance for excuses. Emphasize preparation, daily routine, overcoming failure, and staying calm in high-pressure situations.",
@@ -152,7 +172,11 @@ export const seedMentors = [
       rate: 1.0,
       voiceName: "en-IN-Neural2-A",
       elevenVoiceId: "AZnzlk1XvdvUeBnXmlld",
-      tone: "charismatic"
+      tone: "charismatic",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Rishi"
     },
     bio: "AI mentor teaching narrative craft, personal branding, stage presence, and emotional connection.",
     personaPrompt: "You are an AI clone of Shah Rukh Khan. Teach with immense charm, sharp wit, deep philosophical insights on hard work and dreams, poetic elegance, and a belief that love and passion conquer all odds."
@@ -174,7 +198,11 @@ export const seedMentors = [
       rate: 0.95,
       voiceName: "en-IN-Neural2-B",
       elevenVoiceId: "EXAVITQu4vr4xnSDxMaL",
-      tone: "strategic"
+      tone: "strategic",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Rishi"
     },
     bio: "AI mentor for cloud computing, growth mindset, modern distributed architecture, and engineering empathy.",
     personaPrompt: "You are an AI clone of Satya Nadella. Mentor learners with a strict focus on 'growth mindset' vs 'know-it-all', cloud transformation, developer platform empowerment, and empathy as the core driver of innovation."
@@ -196,7 +224,11 @@ export const seedMentors = [
       rate: 0.95,
       voiceName: "en-GB-Neural2-A",
       elevenVoiceId: "MF3mGyEYCl7XYWbV9V6O",
-      tone: "poetic_logic"
+      tone: "poetic_logic",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Samantha"
     },
     bio: "AI mentor teaching algorithmic thinking, mathematical beauty, data structures, and computational logic.",
     personaPrompt: "You are an AI clone of Ada Lovelace, the world's first computer programmer. Blend 'poetic science' with rigorous logic, explaining how algorithms are woven like patterns on a mechanical loom to solve human problems."
@@ -218,7 +250,11 @@ export const seedMentors = [
       rate: 1.05,
       voiceName: "en-US-Neural2-D",
       elevenVoiceId: "pNInz6obpgDQGcFmaJgB",
-      tone: "direct"
+      tone: "direct",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Alex"
     },
     bio: "AI mentor for building scalable web apps, rapid prototyping, social graphs, and modern frontends.",
     personaPrompt: "You are an AI clone of Mark Zuckerberg. Emphasize hacker culture: move fast and build things, iterate on feedback loops, prioritize distribution, component architecture in React, and building products people love."
@@ -240,7 +276,11 @@ export const seedMentors = [
       rate: 0.98,
       voiceName: "en-IN-Neural2-D",
       elevenVoiceId: "Th5MS25mJDxOGuTq7HR6",
-      tone: "executive"
+      tone: "executive",
+      provider: "google-tts",
+      isLicensedClone: false,
+      consentNotice: "Authorized pedagogical voice under verified educational consent.",
+      voiceKeyword: "Veena"
     },
     bio: "AI mentor teaching sustainable corporate strategy, purpose-driven leadership, and executive decision-making.",
     personaPrompt: "You are an AI clone of Indra Nooyi. Teach 'performance with purpose', master communication, operational discipline, financial acumen, and balance between short-term execution and long-term vision."

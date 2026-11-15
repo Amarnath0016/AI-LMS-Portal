@@ -433,3 +433,135 @@ export const createCourse = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * Save audio playback resume position & auto-complete at >=90% watched.
+ */
+export const saveLessonPlaybackPosition = async (req, res) => {
+  try {
+    const { id } = req.params; // lessonId
+    const { courseId, currentTime, progressPercent } = req.body;
+    const userId = req.user?._id || req.user?.id;
+
+    if (!courseId) {
+      return res.status(400).json({ success: false, message: "Course ID is required." });
+    }
+
+    const isOid = mongoose.Types.ObjectId.isValid(courseId) && String(new mongoose.Types.ObjectId(courseId)) === String(courseId);
+    const course = await Course.findOne(isOid ? { _id: courseId } : { id: Number(courseId) });
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found." });
+    }
+
+    const playbackSec = Math.max(0, Number(currentTime) || 0);
+    const pct = Math.min(100, Math.max(0, Number(progressPercent) || 0));
+    const shouldMarkComplete = pct >= 90;
+
+    const existingProgress = await LessonProgress.findOne({
+      userId,
+      courseId: course._id,
+      lessonId: id,
+    });
+
+    const wasAlreadyCompleted = Boolean(existingProgress?.completed);
+    const isNowCompleted = wasAlreadyCompleted || shouldMarkComplete;
+
+    const progressDoc = await LessonProgress.findOneAndUpdate(
+      { userId, courseId: course._id, lessonId: id },
+      {
+        $set: {
+          playbackPositionSeconds: playbackSec,
+          progress: isNowCompleted ? 100 : pct,
+          completed: isNowCompleted,
+          completedAt: isNowCompleted ? (existingProgress?.completedAt || new Date()) : null,
+        },
+      },
+      { upsert: true, new: true }
+    );
+
+    let enrollmentProgress = null;
+    let earnedXp = 0;
+
+    if (shouldMarkComplete && !wasAlreadyCompleted) {
+      const totalLessons = course.lessons?.length || 1;
+      const completedCount = await LessonProgress.countDocuments({
+        userId,
+        courseId: course._id,
+        completed: true,
+      });
+
+      enrollmentProgress = Math.min(100, Math.round((completedCount / totalLessons) * 100));
+
+      await Enrollment.findOneAndUpdate(
+        { userId, courseId: course._id },
+        {
+          $set: {
+            progress: enrollmentProgress,
+            completed: enrollmentProgress === 100,
+            completedAt: enrollmentProgress === 100 ? new Date() : null,
+          },
+        }
+      );
+
+      const user = await User.findById(userId);
+      if (user) {
+        earnedXp = 50;
+        user.xp = (user.xp || 0) + earnedXp;
+        user.streak = computeUpdatedStreak(user.lastActiveAt, user.streak);
+        user.lastActiveAt = new Date();
+        await user.save();
+      }
+
+      if (enrollmentProgress === 100) {
+        await issueCertificateIfEligible(userId, course._id);
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        lessonId: id,
+        playbackPositionSeconds: playbackSec,
+        progress: progressDoc.progress,
+        completed: progressDoc.completed,
+        earnedXp,
+        courseProgress: enrollmentProgress,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Get saved playback resume position for a lesson.
+ */
+export const getLessonPlaybackPosition = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { courseId } = req.query;
+    const userId = req.user?._id || req.user?.id;
+
+    const query = { userId, lessonId: id };
+    if (courseId) {
+      const isOid = mongoose.Types.ObjectId.isValid(courseId) && String(new mongoose.Types.ObjectId(courseId)) === String(courseId);
+      const course = await Course.findOne(isOid ? { _id: courseId } : { id: Number(courseId) });
+      if (course) query.courseId = course._id;
+    }
+
+    const progressDoc = await LessonProgress.findOne(query);
+
+    return res.json({
+      success: true,
+      data: {
+        lessonId: id,
+        playbackPositionSeconds: progressDoc?.playbackPositionSeconds || 0,
+        progress: progressDoc?.progress || 0,
+        completed: Boolean(progressDoc?.completed),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
