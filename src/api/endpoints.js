@@ -132,3 +132,12 @@ export const instructorApi = {
     api.delete(`/instructor/courses/${courseId}/lessons/${lessonId}/attachments/${attachmentId}`),
   generateLessonDraft: (data) => api.post("/ai/generate-lecture", data),
 };
+
+export const challengeApi = {
+  getToday: () => api.get("/challenges/today"),
+  getById: (id) => api.get(`/challenges/${id}`),
+  getAll: () => api.get("/challenges"),
+  runCode: (id, data) => api.post(`/challenges/${id}/run`, data),
+  submitCode: (id, data) => api.post(`/challenges/${id}/submit`, data),
+  unlockHint: (id, hintIndex) => api.post(`/challenges/${id}/hints/${hintIndex}/unlock`),
+};

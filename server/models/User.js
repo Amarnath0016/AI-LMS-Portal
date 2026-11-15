@@ -29,6 +29,14 @@ const userSchema = new mongoose.Schema(
     enrolledCourses: [{ type: mongoose.Schema.Types.Mixed }],
     wishlist: [{ type: mongoose.Schema.Types.Mixed }],
     lastActiveAt: { type: Date, default: Date.now },
+    lastChallengeDate: { type: Date, default: null },
+    unlockedHints: [
+      {
+        challengeId: { type: String, required: true },
+        hintIndex: { type: Number, required: true },
+        unlockedAt: { type: Date, default: Date.now },
+      },
+    ],
     status: { type: String, default: "Active" },
     resetOtpHash: { type: String, default: null },
     resetOtpExpiresAt: { type: String, default: null },

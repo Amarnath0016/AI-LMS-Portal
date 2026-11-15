@@ -635,23 +635,32 @@ export const evaluateCodeSnippet = async ({ code, language = "javascript", probl
     });
 
     const prompt = `
+You are an expert AI code reviewer providing ADVISORY guidance for learners.
 Analyze this code for "${problemTitle}" in ${language}:
 \`\`\`${language}
 ${code}
 \`\`\`
+
+Note: Your evaluation is ADVISORY only and will NOT decide whether the challenge passes or fails.
 Return JSON:
 {
-  "passed": boolean,
+  "isAdvisory": true,
   "score": number,
   "timeComplexity": string,
   "spaceComplexity": string,
   "feedback": string,
-  "optimizations": [string]
+  "optimizations": [string],
+  "disclaimer": "AI feedback is advisory only. Challenge pass/fail is determined solely by test execution."
 }
 `;
     const result = await model.generateContent(prompt);
     const cleaned = result.response.text().replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+    return {
+      ...parsed,
+      isAdvisory: true,
+      disclaimer: "AI feedback is advisory only and does not decide challenge completion.",
+    };
   } catch (error) {
     const err = new Error("AI code evaluation service is currently unavailable.");
     err.status = 503;

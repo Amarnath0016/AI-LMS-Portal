@@ -934,3 +934,169 @@ export const seedForumPosts = [
     date: "Oct 22, 2026"
   }
 ];
+
+
+export const seedChallenges = [
+  {
+    id: "dc-2026-07-19",
+    title: "Build a Debounce Function with Immediate Execution Option",
+    difficulty: "Medium",
+    category: "JavaScript / Frontend Engineering",
+    xpReward: 200,
+    streakBonus: 50,
+    functionName: "debounce",
+    date: "2026-07-19",
+    description: `Implement a \`debounce\` function that delays processing expensive tasks until after a specified \`wait\` time has elapsed since the last time the function was invoked.
+
+### Requirements:
+1. Return a function that delays execution of \`func\` by \`wait\` milliseconds.
+2. If \`immediate\` option is \`true\`, trigger the function on the leading edge instead of trailing.
+3. Preserve the function context (\`this\`) and pass all arguments correctly.
+4. Support rapid calls without executing multiple times.`,
+    starterCode: `/**
+ * @param {Function} func
+ * @param {number} wait
+ * @param {boolean} [immediate=false]
+ * @returns {Function}
+ */
+function debounce(func, wait, immediate = false) {
+  let timeout = null;
+
+  return function (...args) {
+    const context = this;
+    const callNow = immediate && !timeout;
+
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+      timeout = null;
+      if (!immediate) {
+        func.apply(context, args);
+      }
+    }, wait);
+
+    if (callNow) {
+      func.apply(context, args);
+    }
+  };
+}`,
+    testCases: [
+      {
+        name: "Test 1: Returns a debounced function wrapper",
+        testCode: "const fn = () => {}; const d = debounce(fn, 100); return typeof d === 'function';",
+        expected: true,
+      },
+      {
+        name: "Test 2: Delays execution until wait time passes",
+        testCode: "let called = false; const d = debounce(() => { called = true; }, 30); d(); return new Promise(resolve => setTimeout(() => resolve(called), 60));",
+        expected: true,
+      },
+      {
+        name: "Test 3: Leading edge execution when immediate = true",
+        testCode: "let count = 0; const d = debounce(() => { count++; }, 50, true); d(); return count === 1;",
+        expected: true,
+      },
+    ],
+    hiddenTestCases: [
+      {
+        name: "Hidden Test 1: Rapid calls execute only once on trailing edge",
+        testCode: "let count = 0; const d = debounce(() => { count++; }, 40); d(); d(); d(); return new Promise(resolve => setTimeout(() => resolve(count === 1), 90));",
+        expected: true,
+      },
+      {
+        name: "Hidden Test 2: Passes correct arguments and preserves context",
+        testCode: "let sum = 0; const d = debounce((a, b) => { sum = a + b; }, 30); d(10, 20); return new Promise(resolve => setTimeout(() => resolve(sum === 30), 60));",
+        expected: true,
+      },
+    ],
+    hints: [
+      { hint: "Use `clearTimeout` to cancel existing pending timers before setting a new one.", cost: 10 },
+      { hint: "Store the `timeout` variable in the outer closure so it persists across calls.", cost: 10 },
+      { hint: "For immediate execution, check if `timeout` is null when called, and only invoke `func` if true.", cost: 10 },
+    ],
+    participants: 1420,
+    active: true,
+  },
+  {
+    id: "dc-2026-07-18",
+    title: "Flatten Nested Array with Depth Control",
+    difficulty: "Easy",
+    category: "Algorithms",
+    xpReward: 150,
+    streakBonus: 50,
+    functionName: "flatten",
+    date: "2026-07-18",
+    description: `Write a function \`flatten(arr, depth)\` that flattens an array of nested arrays up to the specified \`depth\`. Default depth should be 1.`,
+    starterCode: `function flatten(arr, depth = 1) {\n  // Write your solution here\n}`,
+    testCases: [
+      {
+        name: "Test 1: Flattens 1 level depth",
+        input: [[1, [2, 3], [4, [5]]], 1],
+        expected: [1, 2, 3, 4, [5]],
+      },
+      {
+        name: "Test 2: Flattens 2 levels depth",
+        input: [[1, [2, [3, [4]], 5]], 2],
+        expected: [1, 2, 3, [4], 5],
+      },
+    ],
+    hiddenTestCases: [
+      {
+        name: "Hidden Test 1: Depth 0 returns identical array",
+        input: [[1, [2, 3]], 0],
+        expected: [1, [2, 3]],
+      },
+      {
+        name: "Hidden Test 2: Arbitrary high depth flattens completely",
+        input: [[[[[[1]]], 2]], 10],
+        expected: [1, 2],
+      },
+    ],
+    hints: [
+      { hint: "Consider recursion or Array.prototype.reduce.", cost: 10 },
+    ],
+    participants: 980,
+    active: true,
+  },
+  {
+    id: "dc-2026-07-17",
+    title: "Two Sum Target Index Pair",
+    difficulty: "Easy",
+    category: "Algorithms",
+    xpReward: 150,
+    streakBonus: 50,
+    functionName: "twoSum",
+    date: "2026-07-17",
+    description: `Given an array of integers \`nums\` and an integer \`target\`, return indices of the two numbers such that they add up to \`target\`.`,
+    starterCode: `function twoSum(nums, target) {\n  // Write your solution here\n}`,
+    testCases: [
+      {
+        name: "Test 1: Basic indices",
+        input: [[2, 7, 11, 15], 9],
+        expected: [0, 1],
+      },
+      {
+        name: "Test 2: Target 6 in array",
+        input: [[3, 2, 4], 6],
+        expected: [1, 2],
+      },
+    ],
+    hiddenTestCases: [
+      {
+        name: "Hidden Test 1: Duplicated values",
+        input: [[3, 3], 6],
+        expected: [0, 1],
+      },
+      {
+        name: "Hidden Test 2: Negative numbers",
+        input: [[-1, -2, -3, -4, -5], -8],
+        expected: [2, 4],
+      },
+    ],
+    hints: [
+      { hint: "Use a Map or hash object to store complement values in a single pass.", cost: 10 },
+    ],
+    participants: 2150,
+    active: true,
+  },
+];
