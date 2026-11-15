@@ -95,7 +95,24 @@ export const deleteUser = async (req, res) => {
 export const approveCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await Course.findOneAndUpdate(getCourseQuery(id), { $set: { status: "approved" } }, { new: true });
+    const reviewerId = req.user?._id || req.user?.id;
+    const reviewerEmail = req.user?.email || "admin@uptoskills.com";
+    const feedback = req.body?.feedback || req.body?.reason || "Approved by administration.";
+
+    const course = await Course.findOneAndUpdate(
+      getCourseQuery(id),
+      {
+        $set: {
+          status: "approved",
+          reviewerId,
+          reviewerEmail,
+          reviewedAt: new Date(),
+          reviewFeedback: feedback,
+          rejectionReason: "",
+        },
+      },
+      { new: true }
+    );
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found." });
     }
@@ -108,7 +125,24 @@ export const approveCourse = async (req, res) => {
 export const rejectCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await Course.findOneAndUpdate(getCourseQuery(id), { $set: { status: "rejected" } }, { new: true });
+    const reviewerId = req.user?._id || req.user?.id;
+    const reviewerEmail = req.user?.email || "admin@uptoskills.com";
+    const reason = req.body?.reason || "Course does not meet curriculum quality standards.";
+
+    const course = await Course.findOneAndUpdate(
+      getCourseQuery(id),
+      {
+        $set: {
+          status: "rejected",
+          reviewerId,
+          reviewerEmail,
+          reviewedAt: new Date(),
+          rejectionReason: reason,
+          reviewFeedback: reason,
+        },
+      },
+      { new: true }
+    );
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found." });
     }

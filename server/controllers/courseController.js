@@ -434,6 +434,60 @@ export const createCourse = async (req, res) => {
   }
 };
 
+export const updateCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const course = await Course.findOne(getCourseQuery(id));
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found." });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      String(course.instructorId) !== String(req.user._id) &&
+      String(course.instructorId) !== String(req.user.id)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to modify this course.",
+      });
+    }
+
+    Object.assign(course, req.body);
+    await course.save();
+
+    return res.json({ success: true, message: "Course updated.", data: course });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteCourse = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const course = await Course.findOne(getCourseQuery(id));
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found." });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      String(course.instructorId) !== String(req.user._id) &&
+      String(course.instructorId) !== String(req.user.id)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to delete this course.",
+      });
+    }
+
+    await Course.deleteOne(getCourseQuery(id));
+    return res.json({ success: true, message: "Course deleted." });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 /**
  * Save audio playback resume position & auto-complete at >=90% watched.
  */

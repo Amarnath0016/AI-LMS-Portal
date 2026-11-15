@@ -7,6 +7,8 @@ import {
   getMyEnrollments,
   completeLesson,
   createCourse,
+  updateCourse,
+  deleteCourse,
 } from "../controllers/courseController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
@@ -20,7 +22,9 @@ router.post("/:id/enroll", protect, enrollCourse);
 router.patch("/:id/progress", protect, updateCourseProgress);
 router.post("/lessons/:id/complete", protect, completeLesson);
 
-// Instructor / Admin course creation route
+// Instructor / Admin course creation, update, and delete routes
 router.post("/", protect, requireRole("instructor", "admin"), createCourse);
+router.patch("/:id", protect, requireRole("instructor", "admin"), updateCourse);
+router.delete("/:id", protect, requireRole("instructor", "admin"), deleteCourse);
 
 export default router;

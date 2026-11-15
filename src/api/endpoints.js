@@ -110,5 +110,25 @@ export const adminApi = {
 
 export const instructorApi = {
   getDashboard: () => api.get("/instructor/dashboard"),
-  getCourses: () => api.get("/instructor/courses"),
+  getCourses: (params) => api.get("/instructor/courses", { params }),
+  getCourse: (id) => api.get(`/instructor/courses/${id}`),
+  createCourse: (data) => api.post("/instructor/courses", data),
+  updateCourse: (id, data) => api.patch(`/instructor/courses/${id}`, data),
+  deleteCourse: (id) => api.delete(`/instructor/courses/${id}`),
+  submitCourse: (id) => api.post(`/instructor/courses/${id}/submit`),
+  addModule: (courseId, data) => api.post(`/instructor/courses/${courseId}/modules`, data),
+  updateModule: (courseId, moduleId, data) => api.patch(`/instructor/courses/${courseId}/modules/${moduleId}`, data),
+  deleteModule: (courseId, moduleId) => api.delete(`/instructor/courses/${courseId}/modules/${moduleId}`),
+  reorderModules: (courseId, moduleIds) => api.patch(`/instructor/courses/${courseId}/modules-reorder`, { moduleIds }),
+  addLesson: (courseId, data) => api.post(`/instructor/courses/${courseId}/lessons`, data),
+  updateLesson: (courseId, lessonId, data) => api.patch(`/instructor/courses/${courseId}/lessons/${lessonId}`, data),
+  deleteLesson: (courseId, lessonId) => api.delete(`/instructor/courses/${courseId}/lessons/${lessonId}`),
+  reorderLessons: (courseId, lessonIds) => api.patch(`/instructor/courses/${courseId}/lessons-reorder`, { lessonIds }),
+  uploadAttachment: (courseId, lessonId, formData) =>
+    api.post(`/instructor/courses/${courseId}/lessons/${lessonId}/attachments`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  deleteAttachment: (courseId, lessonId, attachmentId) =>
+    api.delete(`/instructor/courses/${courseId}/lessons/${lessonId}/attachments/${attachmentId}`),
+  generateLessonDraft: (data) => api.post("/ai/generate-lecture", data),
 };

@@ -1,63 +1,69 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
-import Course from "../models/Course.js";
+import { uploadLessonMaterial } from "../middleware/uploadMiddleware.js";
+import {
+  getInstructorDashboard,
+  getInstructorCourses,
+  getInstructorCourseById,
+  createInstructorCourse,
+  updateInstructorCourse,
+  deleteInstructorCourse,
+  submitCourseForReview,
+  addCourseModule,
+  updateCourseModule,
+  deleteCourseModule,
+  reorderCourseModules,
+  addCourseLesson,
+  updateCourseLesson,
+  deleteCourseLesson,
+  reorderCourseLessons,
+  uploadLessonAttachment,
+  deleteLessonAttachment,
+  downloadLessonAttachment,
+} from "../controllers/instructorController.js";
 
 const router = express.Router();
 
-// Apply protect and requireRole("instructor", "admin") across all instructor routes
+// Public/enrolled file download route (protect handles auth, controller checks enrollment/ownership)
+router.get("/courses/:id/lessons/:lessonId/attachments/:filename", protect, downloadLessonAttachment);
+
+// Require instructor or admin role for all management routes
 router.use(protect);
 router.use(requireRole("instructor", "admin"));
 
-router.get("/dashboard", async (req, res) => {
-  try {
-    const filter =
-      req.user.role === "admin"
-        ? {}
-        : {
-            $or: [
-              { instructorId: req.user._id },
-              { instructorId: req.user.id },
-              { mentorId: req.user._id },
-              { mentorId: req.user.id },
-            ],
-          };
+// Dashboard & Analytics
+router.get("/dashboard", getInstructorDashboard);
 
-    const myCourses = await Course.find(filter);
+// Course Management
+router.get("/courses", getInstructorCourses);
+router.post("/courses", createInstructorCourse);
+router.get("/courses/:id", getInstructorCourseById);
+router.patch("/courses/:id", updateInstructorCourse);
+router.delete("/courses/:id", deleteInstructorCourse);
+router.post("/courses/:id/submit", submitCourseForReview);
 
-    return res.json({
-      success: true,
-      data: {
-        totalCourses: myCourses.length,
-        approvedCourses: myCourses.filter((c) => c.status === "approved").length,
-        pendingCourses: myCourses.filter((c) => c.status === "pending").length,
-        courses: myCourses,
-      },
-    });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-});
+// Module Management
+router.post("/courses/:id/modules", addCourseModule);
+router.patch("/courses/:id/modules/:moduleId", updateCourseModule);
+router.delete("/courses/:id/modules/:moduleId", deleteCourseModule);
+router.patch("/courses/:id/modules-reorder", reorderCourseModules);
 
-router.get("/courses", async (req, res) => {
-  try {
-    const filter =
-      req.user.role === "admin"
-        ? {}
-        : {
-            $or: [
-              { instructorId: req.user._id },
-              { instructorId: req.user.id },
-              { mentorId: req.user._id },
-              { mentorId: req.user.id },
-            ],
-          };
+// Lesson Management
+router.post("/courses/:id/lessons", addCourseLesson);
+router.patch("/courses/:id/lessons/:lessonId", updateCourseLesson);
+router.delete("/courses/:id/lessons/:lessonId", deleteCourseLesson);
+router.patch("/courses/:id/lessons-reorder", reorderCourseLessons);
 
-    const myCourses = await Course.find(filter);
-    return res.json({ success: true, count: myCourses.length, data: myCourses });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-});
+// File Upload for Lesson Materials (Stored outside web root)
+router.post(
+  "/courses/:id/lessons/:lessonId/attachments",
+  uploadLessonMaterial.single("file"),
+  uploadLessonAttachment
+);
+router.delete(
+  "/courses/:id/lessons/:lessonId/attachments/:attachmentId",
+  deleteLessonAttachment
+);
 
 export default router;

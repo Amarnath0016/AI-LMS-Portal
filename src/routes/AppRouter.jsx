@@ -36,6 +36,7 @@ import StudyPlannerPage from "@/pages/StudyPlanner/StudyPlannerPage";
 import AchievementBadgesPage from "@/pages/AchievementBadges/AchievementBadgesPage";
 import CareerOptionsPage from "@/pages/CareerOptions/CareerOptionsPage";
 import VerifyCertificate from "@/pages/Certificates/VerifyCertificate";
+import CourseBuilder from "@/pages/Instructor/CourseBuilder";
 
 export default function AppRouter() {
   return (
@@ -196,6 +197,14 @@ export default function AppRouter() {
           element={
             <PrivateRoute roles={["instructor", "admin"]}>
               <MainLayout><InstructorDashboard /></MainLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/instructor/builder/:id?"
+          element={
+            <PrivateRoute roles={["instructor", "admin"]}>
+              <MainLayout><CourseBuilder /></MainLayout>
             </PrivateRoute>
           }
         />

@@ -14,6 +14,25 @@ const lessonSchema = new mongoose.Schema(
     videoUrl: { type: String, default: "" },
     order: { type: Number, default: 0 },
     xpReward: { type: Number, default: 100 },
+    attachments: [
+      {
+        filename: { type: String, required: true },
+        originalName: { type: String, required: true },
+        path: { type: String, required: true },
+        mimetype: { type: String, default: "application/octet-stream" },
+        size: { type: Number, default: 0 },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
+    quizQuestions: [
+      {
+        id: { type: mongoose.Schema.Types.Mixed },
+        question: { type: String, required: true },
+        options: [{ type: String }],
+        correctAnswerIndex: { type: Number, default: 0 },
+        explanation: { type: String, default: "" },
+      },
+    ],
   },
   {
     timestamps: true,
