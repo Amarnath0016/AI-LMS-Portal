@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { ACTION_TYPES, ROLES } from "@/constants";
+import { courseApi } from "@/api/endpoints";
 import { toast } from "sonner";
 
 const AuthContext = createContext(null);
@@ -93,12 +94,17 @@ export function AuthProvider({ children }) {
     const mentor = localStorage.getItem("selectedMentor");
     const progress = localStorage.getItem("courseProgress");
     
-    // Load state or fallback to defaults
-    if (stored) {
-      setUser(JSON.parse(stored));
+    // Load state from localStorage only if authenticated
+    if (stored && localStorage.getItem("auth") === "true") {
+      try {
+        setUser(JSON.parse(stored));
+      } catch {
+        setUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("auth");
+      }
     } else {
-      setUser(defaultUser);
-      localStorage.setItem("user", JSON.stringify(defaultUser));
+      setUser(null);
     }
     
     if (mentor) setSelectedMentor(JSON.parse(mentor));
@@ -136,12 +142,13 @@ export function AuthProvider({ children }) {
     localStorage.setItem(key, JSON.stringify(value));
   };
 
-  const login = (userData) => {
-    const fullUser = { ...defaultUser, ...userData };
-    setUser(fullUser);
+  const login = (userData, token) => {
+    setUser(userData);
     localStorage.setItem("auth", "true");
-    localStorage.setItem("user", JSON.stringify(fullUser));
-    localStorage.setItem("token", "demo-token");
+    localStorage.setItem("user", JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem("token", token);
+    }
   };
 
   const logout = () => {
@@ -151,9 +158,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
   };
 
-  const register = (userData) => {
-    const newUser = { ...defaultUser, ...userData, role: ROLES.STUDENT, xp: 0, streak: 1 };
-    login(newUser);
+  const register = (userData, token) => {
+    login(userData, token);
   };
 
   const selectMentor = (mentor) => {
@@ -231,6 +237,9 @@ export function AuthProvider({ children }) {
     const id = Number(courseId);
     updateProgress(id, 0); // Initialize progress
     removeFromWishlist(id);
+    
+    // Sync with backend API
+    courseApi.enroll(id).catch((err) => console.warn("Backend enroll sync:", err?.message));
     
     // Create notification
     const newNotif = {
@@ -379,7 +388,7 @@ export function AuthProvider({ children }) {
         user,
         selectedMentor,
         courseProgress,
-        isAuthenticated: !!user || localStorage.getItem("auth") === "true",
+        isAuthenticated: Boolean(user && localStorage.getItem("auth") === "true"),
         login,
         logout,
         register,

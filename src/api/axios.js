@@ -4,6 +4,7 @@ import { API_URL } from "@/constants";
 const api = axios.create({
   baseURL: API_URL,
   timeout: 15000,
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -19,6 +20,15 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("auth");
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.startsWith("/login") &&
+        !window.location.pathname.startsWith("/register")
+      ) {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   },

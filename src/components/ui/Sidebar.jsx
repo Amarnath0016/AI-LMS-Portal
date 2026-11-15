@@ -18,6 +18,9 @@ import {
   MessageSquare,
   HelpCircle,
   UserRound,
+  Flame,
+  CalendarDays,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/utils";
 
@@ -26,6 +29,7 @@ const studentSections = [
     title: "Student Hub",
     links: [
       { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
+      { to: "/daily-challenge", label: "Daily Challenge", icon: Flame },
       { to: "/courses", label: "Course Catalog", icon: GraduationCap },
       { to: "/leagues", label: "My Leagues", icon: Trophy },
       { to: "/mentors", label: "AI Mentors", icon: Star },
@@ -33,10 +37,12 @@ const studentSections = [
     ],
   },
   {
-    title: "My Learning",
+    title: "My Learning & Goals",
     links: [
       { to: "/profile", label: "Profile", icon: UserRound },
-      { to: "/achievements", label: "Achievements", icon: Award },
+      { to: "/study-planner", label: "Study Planner", icon: CalendarDays },
+      { to: "/achievement-badges", label: "Achievement Badges", icon: Award },
+      { to: "/career-options", label: "Career Options", icon: Briefcase },
       { to: "/wishlist", label: "Wishlist", icon: Heart },
       { to: "/certificates", label: "Certificates", icon: FileCheck },
     ],

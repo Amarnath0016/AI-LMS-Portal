@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+server/node_modules/
+.pnp
+.pnp.js
+
+# Production Build Output
+dist/
+build/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+server/.env
+server/.env.*
+!.env.example
+!server/.env.example
+
+# Local Database & Cache
+server/data/store.json
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor / IDE Files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

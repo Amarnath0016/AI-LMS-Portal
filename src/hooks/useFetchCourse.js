@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { courseApi } from "@/api/endpoints";
 import { getCourseById, getMentorById } from "@/store/mockData";
 
 export function useFetchCourse(courseId) {
@@ -9,19 +10,43 @@ export function useFetchCourse(courseId) {
 
   useEffect(() => {
     if (!courseId) return;
+    let isMounted = true;
     setLoading(true);
-    const timer = setTimeout(() => {
-      const found = getCourseById(courseId);
-      if (found) {
-        setCourse(found);
-        setMentor(getMentorById(found.mentorId));
-        setError(null);
-      } else {
-        setError("Course not found");
+
+    const fetchCourse = async () => {
+      try {
+        const response = await courseApi.getById(courseId);
+        if (isMounted && response.data?.data) {
+          const courseData = response.data.data;
+          setCourse(courseData);
+          setMentor(courseData.mentor || getMentorById(courseData.mentorId));
+          setError(null);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend fetch failed, using fallback data:", err.message);
       }
-      setLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
+
+      // Resilient fallback to local store
+      if (isMounted) {
+        const found = getCourseById(courseId);
+        if (found) {
+          setCourse(found);
+          setMentor(getMentorById(found.mentorId));
+          setError(null);
+        } else {
+          setError("Course not found");
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchCourse();
+
+    return () => {
+      isMounted = false;
+    };
   }, [courseId]);
 
   return { course, mentor, loading, error };

@@ -30,6 +30,12 @@ import CertificatesPage from "@/pages/Dashboard/Certificates";
 import FeedbackPage from "@/pages/Dashboard/Feedback";
 import SupportPage from "@/pages/Dashboard/Support";
 
+// New Core Pages
+import DailyChallengePage from "@/pages/DailyChallenge/DailyChallengePage";
+import StudyPlannerPage from "@/pages/StudyPlanner/StudyPlannerPage";
+import AchievementBadgesPage from "@/pages/AchievementBadges/AchievementBadgesPage";
+import CareerOptionsPage from "@/pages/CareerOptions/CareerOptionsPage";
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
@@ -144,6 +150,40 @@ export default function AppRouter() {
           element={
             <PrivateRoute>
               <MainLayout><SupportPage /></MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* New Core Learning & Career Routes */}
+        <Route
+          path="/daily-challenge"
+          element={
+            <PrivateRoute>
+              <MainLayout><DailyChallengePage /></MainLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/study-planner"
+          element={
+            <PrivateRoute>
+              <MainLayout><StudyPlannerPage /></MainLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/achievement-badges"
+          element={
+            <PrivateRoute>
+              <MainLayout><AchievementBadgesPage /></MainLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/career-options"
+          element={
+            <PrivateRoute>
+              <MainLayout><CareerOptionsPage /></MainLayout>
             </PrivateRoute>
           }
         />

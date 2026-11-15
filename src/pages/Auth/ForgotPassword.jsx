@@ -4,6 +4,7 @@ import { ArrowRight, Loader2, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/common/button";
 import { Field, FormMessage } from "@/components/ui/form";
+import { authApi } from "@/api/endpoints";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -24,12 +25,25 @@ export default function ForgotPassword() {
 
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setMessage({ type: "success", text: "Reset code sent. Continue to OTP verification." });
-      toast.success("Reset code sent");
-      navigate("/verify-otp", { state: { email } });
-    }, 900);
+    authApi
+      .forgotPassword(email)
+      .then((res) => {
+        setLoading(false);
+        const successMsg = res.data?.message || "Reset code sent. Continue to OTP verification.";
+        setMessage({ type: "success", text: successMsg });
+        toast.success("Reset code sent");
+        navigate("/verify-otp", { state: { email } });
+      })
+      .catch((err) => {
+        setLoading(false);
+        const errorMsg =
+          err.response?.data?.message ||
+          (err.message === "Network Error"
+            ? "Cannot reach server. Please check your connection."
+            : "Failed to send reset code. Please try again.");
+        setMessage({ type: "error", text: errorMsg });
+        toast.error(errorMsg);
+      });
   };
 
   return (

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { FormMessage } from "@/components/ui/form";
+import { authApi } from "@/api/endpoints";
 
 export default function OtpVerification() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function OtpVerification() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
-  const email = location.state?.email || "your email";
+  const email = location.state?.email || "";
   const otpValue = useMemo(() => otp.join(""), [otp]);
 
   const updateOtp = (index, value) => {
@@ -25,18 +26,37 @@ export default function OtpVerification() {
     event.preventDefault();
     setMessage(null);
     if (otpValue.length !== 6) {
-      setMessage({ type: "error", text: "Enter the 6-digit verification code." });
+      setMessage({ type: "error", text: "Enter the complete 6-digit verification code." });
       toast.error("Enter the 6-digit verification code");
       return;
     }
 
+    if (!email) {
+      setMessage({ type: "error", text: "Missing account email. Please restart password reset." });
+      toast.error("Missing email");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setMessage({ type: "success", text: "OTP verified. You can now sign in." });
-      toast.success("OTP verified");
-      navigate("/login");
-    }, 900);
+    authApi
+      .verifyOtp({ email, otp: otpValue })
+      .then((res) => {
+        setLoading(false);
+        const successMsg = res.data?.message || "OTP verified successfully. You can now sign in.";
+        setMessage({ type: "success", text: successMsg });
+        toast.success("OTP verified");
+        navigate("/login");
+      })
+      .catch((err) => {
+        setLoading(false);
+        const errorMsg =
+          err.response?.data?.message ||
+          (err.message === "Network Error"
+            ? "Cannot reach verification server. Please check your connection."
+            : "Invalid or expired verification code.");
+        setMessage({ type: "error", text: errorMsg });
+        toast.error(errorMsg);
+      });
   };
 
   return (
@@ -47,7 +67,9 @@ export default function OtpVerification() {
             <ShieldCheck className="h-7 w-7" />
           </div>
           <h1 className="text-3xl font-black">OTP Verification</h1>
-          <p className="mt-2 text-muted">Enter the code sent to {email}.</p>
+          <p className="mt-2 text-muted">
+            {email ? `Enter the code sent to ${email}.` : "Enter the 6-digit verification code."}
+          </p>
         </div>
 
         <div className="app-card rounded-lg p-6 sm:p-8">

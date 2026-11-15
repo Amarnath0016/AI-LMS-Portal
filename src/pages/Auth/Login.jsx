@@ -6,9 +6,9 @@ import { Button } from "@/components/common/button";
 import { Field, FormMessage } from "@/components/ui/form";
 import { useAuthContext } from "@/store/AuthContext";
 import { ROLES } from "@/constants";
+import { authApi } from "@/api/endpoints";
 
 const loginRoles = ["student", "admin"];
-const ADMIN_ACCESS_CODE = "123456";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,10 +17,22 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState(null);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState(null);
   const [adminVerification, setAdminVerification] = useState(false);
   const [adminCode, setAdminCode] = useState("");
+
+  const handleSocialLogin = (provider) => {
+    setSocialLoading(provider);
+    setTimeout(() => {
+      if (provider === "github") {
+        window.location.href = "https://github.com/login";
+      } else {
+        window.location.href = "https://accounts.google.com/signin";
+      }
+    }, 800);
+  };
 
   const selectRole = (nextRole) => {
     setRole(nextRole);
@@ -34,9 +46,9 @@ export default function Login() {
     e.preventDefault();
     const nextErrors = {};
     if (!email.includes("@")) nextErrors.email = "Enter a valid email address.";
-    if (password.length < 6) nextErrors.password = "Password must be at least 6 characters.";
-    if (role === "admin" && adminVerification && adminCode !== ADMIN_ACCESS_CODE) {
-      nextErrors.adminCode = "Enter the correct admin access code.";
+    if (password.length < 8) nextErrors.password = "Password must be at least 8 characters.";
+    if (role === "admin" && adminVerification && !adminCode.trim()) {
+      nextErrors.adminCode = "Enter your admin security access code.";
     }
 
     setErrors(nextErrors);
@@ -48,27 +60,33 @@ export default function Login() {
 
     if (role === "admin" && !adminVerification) {
       setAdminVerification(true);
-      setMessage({ type: "success", text: "Admin credentials verified. Enter the access code to continue." });
-      toast.success("Admin verification required");
+      setMessage({ type: "info", text: "Admin credentials entered. Please enter your admin security code." });
+      toast.info("Admin access code required");
       return;
     }
 
     setLoading(true);
-    setTimeout(() => {
-      const userData = {
-        name: email.split("@")[0],
-        email,
-        role: role === "admin" ? ROLES.ADMIN : ROLES.STUDENT,
-        xp: 4200,
-        streak: 7,
-      };
-      login(userData);
-      setLoading(false);
-      setMessage({ type: "success", text: "Signed in successfully. Redirecting..." });
-      toast.success("Welcome back!");
-      if (role === "admin") navigate("/admin");
-      else navigate("/dashboard");
-    }, 1000);
+    authApi
+      .login({ email, password, role, adminCode })
+      .then((res) => {
+        const { user: backendUser, token } = res.data;
+        login(backendUser, token);
+        setLoading(false);
+        setMessage({ type: "success", text: "Signed in successfully. Redirecting..." });
+        toast.success("Welcome back!");
+        if (backendUser.role === ROLES.ADMIN || role === "admin") navigate("/admin");
+        else navigate("/dashboard");
+      })
+      .catch((err) => {
+        setLoading(false);
+        const errorMsg =
+          err.response?.data?.message ||
+          (err.message === "Network Error"
+            ? "Cannot reach authentication server. Please check your network connection."
+            : "Invalid email or password.");
+        setMessage({ type: "error", text: errorMsg });
+        toast.error(errorMsg);
+      });
   };
 
   return (
@@ -114,12 +132,30 @@ export default function Login() {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Button variant="outline" type="button">
-                <Github className="mr-2 h-4 w-4" />
+              <Button 
+                variant="outline" 
+                type="button" 
+                onClick={() => handleSocialLogin("github")}
+                disabled={loading || socialLoading !== null}
+              >
+                {socialLoading === "github" ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Github className="mr-2 h-4 w-4" />
+                )}
                 GitHub
               </Button>
-              <Button variant="outline" type="button">
-                <Mail className="mr-2 h-4 w-4" />
+              <Button 
+                variant="outline" 
+                type="button" 
+                onClick={() => handleSocialLogin("google")}
+                disabled={loading || socialLoading !== null}
+              >
+                {socialLoading === "google" ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="mr-2 h-4 w-4" />
+                )}
                 Google
               </Button>
             </div>
@@ -139,7 +175,7 @@ export default function Login() {
                 id="password"
                 label="Password"
                 type="password"
-                placeholder="Min 6 characters"
+                placeholder="Min 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={errors.password}
@@ -149,11 +185,11 @@ export default function Login() {
                   id="admin-code"
                   label="Admin Access Code"
                   type="password"
-                  placeholder="Enter 6-digit code"
+                  placeholder="Enter admin code"
                   value={adminCode}
                   onChange={(e) => setAdminCode(e.target.value)}
                   error={errors.adminCode}
-                  hint="Demo access code: 123456"
+                  hint="Server-verified admin second factor."
                 />
               )}
               <div className="flex justify-end">

@@ -5,6 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/server.js",
+    "server:dev": "node --watch server/server.js",
+    "seed": "node server/scripts/seed.js",
+    "server:seed": "node server/scripts/seed.js",
+    "test": "cd server && npm test",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
