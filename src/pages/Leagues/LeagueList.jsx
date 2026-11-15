@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import {
   CheckCircle2,
   Filter,
@@ -87,9 +87,9 @@ export default function LeagueList() {
   }, [quizLeagues, search, level, category]);
 
   // Checks if a league is completed (parts 1, 2, 3 done)
-  const isLeagueComplete = (leagueId) => {
+  const isLeagueComplete = useCallback((leagueId) => {
     return [1, 2, 3].every((partId) => quizAttempts[`${leagueId}-${partId}`] !== undefined);
-  };
+  }, [quizAttempts]);
 
   // Calculates total XP gained in leagues
   const earnedXp = useMemo(() => {
@@ -102,7 +102,7 @@ export default function LeagueList() {
   // Calculates total number of completed leagues
   const completedLeaguesCount = useMemo(() => {
     return quizLeagues.filter((l) => isLeagueComplete(l.id)).length;
-  }, [quizLeagues, quizAttempts]);
+  }, [quizLeagues, isLeagueComplete]);
 
   // Quiz flow methods
   const openQuiz = (league) => {

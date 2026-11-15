@@ -123,7 +123,9 @@ describe("Instructor Workflow & Permissions Integration Tests", () => {
       if (fs.existsSync(filePath)) {
         try {
           fs.unlinkSync(filePath);
-        } catch (_) {}
+        } catch (_err) {
+          // ignore cleanup errors during test teardown
+        }
       }
     }
     await disconnectDB();

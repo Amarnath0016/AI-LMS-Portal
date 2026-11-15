@@ -14,6 +14,7 @@ import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import mongoose from "mongoose";
 import { connectDB } from "./config/db.js";
+import { logger, requestLogger } from "./utils/logger.js";
 
 // Fatal crash on startup if JWT_SECRET is missing (Requirement 9)
 if (!process.env.JWT_SECRET) {
@@ -52,13 +53,11 @@ const PORT = process.env.PORT || 5001;
 // Helmet HTTP headers security with cross-origin audio streaming support
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
+// Attach Structured Logging & Request IDs (Requirement 5)
+app.use(requestLogger);
+
 // Cookie parser for secure httpOnly refresh tokens
 app.use(cookieParser());
-
-// Logging
-if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test") {
-  app.use(morgan("dev"));
-}
 
 // CORS allow-list from CLIENT_ORIGIN only (no "*") (Requirement 8)
 const clientOriginEnv = process.env.CLIENT_ORIGIN || "http://localhost:5173,http://127.0.0.1:5173";
@@ -113,16 +112,55 @@ const aiLimiter = rateLimit({
   },
 });
 
-// System Health Check Endpoint
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "online",
+// System Health & Observability Check Endpoint (Requirement 5)
+app.get("/api/health", async (req, res) => {
+  const isDbReady = mongoose.connection.readyState === 1;
+  let dbLatencyMs = null;
+  let dbStatus = "down";
+
+  if (isDbReady && mongoose.connection.db) {
+    try {
+      const pingStart = Date.now();
+      await mongoose.connection.db.admin().ping();
+      dbLatencyMs = Date.now() - pingStart;
+      dbStatus = "healthy";
+    } catch {
+      dbStatus = "error";
+    }
+  } else if (isDbReady) {
+    dbStatus = "connected";
+  }
+
+  const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 5);
+  const aiStatus = hasGeminiKey ? "configured" : "fallback_mode";
+
+  const memUsage = process.memoryUsage();
+  const healthData = {
+    status: isDbReady ? "healthy" : "unhealthy",
+    database: isDbReady ? "MongoDB Active" : "Disconnected",
     service: "UptoSkills AI LMS Platform Engine",
     version: "2.0.0",
-    database: mongoose.connection.readyState === 1 ? "MongoDB Active" : "MongoDB Disconnected",
-    aiEngine: process.env.GEMINI_API_KEY ? "Google Gemini + Persona Engine" : "Celebrity Persona Engine",
+    uptimeSeconds: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
-  });
+    checks: {
+      database: {
+        status: dbStatus,
+        readyState: mongoose.connection.readyState,
+        latencyMs: dbLatencyMs,
+      },
+      aiProvider: {
+        status: aiStatus,
+        provider: "google-gemini",
+        model: process.env.GEMINI_MODEL || "gemini-1.5-flash",
+      },
+      memory: {
+        heapUsedMb: Math.round(memUsage.heapUsed / 1024 / 1024),
+        rssMb: Math.round(memUsage.rss / 1024 / 1024),
+      },
+    },
+  };
+
+  return res.status(isDbReady ? 200 : 503).json(healthData);
 });
 
 // Mount Routes

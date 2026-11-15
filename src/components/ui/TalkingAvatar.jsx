@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   ShieldCheck,
   Sparkles,
@@ -87,7 +87,7 @@ export function TalkingAvatar({
   }, [mentorId]);
 
   // 2. Setup Web Audio AnalyserNode on HTML5 <audio> element
-  const initAudioAnalyser = () => {
+  const initAudioAnalyser = useCallback(() => {
     if (!audioRef?.current) return;
     const audioElement = audioRef.current;
 
@@ -120,7 +120,7 @@ export function TalkingAvatar({
     } catch {
       // Audio element already connected or CORS restricted: fallback to time-based phonemes
     }
-  };
+  }, [audioRef]);
 
   // 3. Real-time Audio Frequency & Viseme Animation Loop
   useEffect(() => {
@@ -229,7 +229,7 @@ export function TalkingAvatar({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [playing, useStaticFallback, currentTime, words]);
+  }, [playing, useStaticFallback, currentTime, words, initAudioAnalyser]);
 
   // 4. Natural Periodic Eye Blinking (every 3.2 - 5 seconds for 140ms)
   useEffect(() => {

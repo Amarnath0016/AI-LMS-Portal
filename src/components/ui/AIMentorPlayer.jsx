@@ -123,10 +123,11 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
 
     loadVoiceAndAudio();
 
+    const currentAudio = audioRef.current;
     return () => {
       isMounted = false;
-      if (audioRef.current) {
-        audioRef.current.pause();
+      if (currentAudio) {
+        currentAudio.pause();
       }
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
@@ -363,12 +364,40 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
     submitQuestion(q);
   };
 
+  // Keyboard shortcuts handler for accessibility
+  const handleKeyDown = (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+    if (e.key === " " || e.key === "k" || e.key === "K") {
+      e.preventDefault();
+      togglePlay();
+    } else if (e.key === "ArrowLeft" || e.key === "j" || e.key === "J") {
+      e.preventDefault();
+      handleSeek(Math.max(0, currentTime - 5));
+    } else if (e.key === "ArrowRight" || e.key === "l" || e.key === "L") {
+      e.preventDefault();
+      handleSeek(Math.min(duration || 100, currentTime + 5));
+    } else if (e.key === "m" || e.key === "M") {
+      e.preventDefault();
+      setMuted((prev) => !prev);
+    } else if (e.key === "c" || e.key === "C") {
+      e.preventDefault();
+      setShowCaptions((prev) => !prev);
+    }
+  };
+
   if (!mentor || !lesson) return null;
 
   const audioSourceUrl = audioData?.fullAudioUrl || audioData?.segments?.[0]?.audioUrl || "";
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-800 bg-upto-card shadow-2xl">
+    <div
+      role="region"
+      aria-label="AI Mentor Video Lecture Player"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      className="overflow-hidden rounded-2xl border border-gray-800 bg-upto-card shadow-2xl focus-visible:ring-2 focus-visible:ring-upto-blue focus:outline-none"
+    >
       {/* HTML5 Audio Element for Real TTS Playback */}
       {audioSourceUrl && !useFallbackVoice && (
         <audio
@@ -479,8 +508,9 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
           <button
             onClick={togglePlay}
             disabled={audioLoading}
-            title={playing ? "Pause AI Lecture" : "Play AI Lecture"}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 backdrop-blur-md transition-all hover:bg-white/20 hover:scale-110 active:scale-95 shadow-xl border border-white/20 disabled:opacity-50"
+            aria-label={playing ? "Pause lecture (Space/K)" : "Play lecture (Space/K)"}
+            title={playing ? "Pause AI Lecture (Space/K)" : "Play AI Lecture (Space/K)"}
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 backdrop-blur-md transition-all hover:bg-white/20 hover:scale-110 active:scale-95 shadow-xl border border-white/20 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-upto-blue focus:outline-none"
           >
             {audioLoading ? (
               <Loader2 className="h-6 w-6 text-white animate-spin" />
@@ -494,7 +524,12 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
 
         {/* Live Synchronized Closed-Caption Overlay (Requirement 4) */}
         {showCaptions && (
-          <div className="absolute bottom-16 left-4 right-4 z-20 flex justify-center pointer-events-none">
+          <div
+            role="region"
+            aria-label="Closed captions"
+            aria-live="polite"
+            className="absolute bottom-16 left-4 right-4 z-20 flex justify-center pointer-events-none"
+          >
             <div className="max-w-[90%] rounded-xl bg-black/85 backdrop-blur-md px-4 py-2 text-center text-xs text-white shadow-2xl border border-white/10">
               {activeWord ? (
                 <p className="font-medium text-gray-200">
@@ -530,8 +565,10 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
                 setShowCaptions(!showCaptions);
                 toast.info(showCaptions ? "Captions Disabled" : "Live Captions Enabled");
               }}
-              title="Toggle Closed Captions"
-              className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-colors ${
+              aria-label={showCaptions ? "Disable closed captions (C)" : "Enable closed captions (C)"}
+              aria-pressed={showCaptions}
+              title="Toggle Closed Captions (C)"
+              className={`flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-colors focus-visible:ring-2 focus-visible:ring-upto-blue focus:outline-none ${
                 showCaptions
                   ? "bg-blue-600/40 text-blue-200 border border-blue-500/30"
                   : "bg-white/10 text-gray-400 hover:text-white"
@@ -549,7 +586,8 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
                 setPlaybackSpeed(nextSpeed);
                 toast.info(`Playback speed set to ${nextSpeed}x`);
               }}
-              className="flex items-center gap-1 rounded-lg bg-white/10 px-2 py-1 text-[11px] font-bold text-white hover:bg-white/20"
+              aria-label={`Playback speed: ${playbackSpeed}x`}
+              className="flex items-center gap-1 rounded-lg bg-white/10 px-2 py-1 text-[11px] font-bold text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-upto-blue focus:outline-none"
             >
               <Gauge className="h-3.5 w-3.5" />
               {playbackSpeed}x
@@ -561,7 +599,10 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
                 setMuted(!muted);
                 toast.info(muted ? "AI Voice Unmuted" : "AI Voice Muted");
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20"
+              aria-label={muted ? "Unmute audio (M)" : "Mute audio (M)"}
+              aria-pressed={muted}
+              title={muted ? "Unmute audio (M)" : "Mute audio (M)"}
+              className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-upto-blue focus:outline-none"
             >
               {muted ? (
                 <VolumeX className="h-3.5 w-3.5 text-red-400" />
@@ -594,7 +635,12 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
             step={0.5}
             value={currentTime}
             onChange={(e) => handleSeek(Number(e.target.value))}
-            className="w-full h-2 rounded-full appearance-none bg-gray-800 accent-blue-500 cursor-pointer"
+            aria-label="Seek playback position (Left/Right Arrows)"
+            aria-valuemin={0}
+            aria-valuemax={Math.round(duration || 100)}
+            aria-valuenow={Math.round(currentTime)}
+            aria-valuetext={`${formatSeconds(currentTime)} of ${formatSeconds(duration || 60)}`}
+            className="w-full h-2 rounded-full appearance-none bg-gray-800 accent-blue-500 cursor-pointer focus-visible:ring-2 focus-visible:ring-upto-blue focus:outline-none"
           />
         </div>
 
@@ -800,3 +846,5 @@ export function AIMentorPlayer({ mentor, lesson, courseId, onComplete }) {
     </div>
   );
 }
+
+export default AIMentorPlayer;

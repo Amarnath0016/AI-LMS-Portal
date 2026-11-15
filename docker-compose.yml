@@ -11,6 +11,12 @@ services:
       MONGO_INITDB_DATABASE: uptoskills
     volumes:
       - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - uptoskills-network
 
@@ -29,10 +35,13 @@ services:
       CLIENT_ORIGIN: http://localhost:5173,http://localhost:80,http://localhost:3000
       JWT_SECRET: ${JWT_SECRET:-uptoskills_super_secret_jwt_key_at_least_32_chars_prod}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-uptoskills_super_secret_refresh_jwt_key_at_least_32_chars}
-      ADMIN_ACCESS_CODE: ${ADMIN_ACCESS_CODE:-123456}
+      ADMIN_ACCESS_CODE: ${ADMIN_ACCESS_CODE:-UPTO_ADMIN_DEV_2026}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      TTS_PROVIDER: ${TTS_PROVIDER:-google}
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     networks:
       - uptoskills-network
 

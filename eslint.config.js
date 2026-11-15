@@ -27,4 +27,10 @@ export default [
       "no-unused-vars": "off",
     },
   },
+  {
+    files: ["src/store/**/*.{js,jsx}", "src/context/**/*.{js,jsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 ];
