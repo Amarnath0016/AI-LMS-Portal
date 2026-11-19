@@ -4,14 +4,15 @@ import { formatCurrency } from "@/utils";
 
 export function CourseCard({ course, selectedMentorId, mentors = [], onMentorChange, onMentorRemove }) {
   const navigate = useNavigate();
+  const mentorList = Array.isArray(mentors) ? mentors : [];
 
   // Find mentor from course object or passed mentors list
   let mentor = null;
   if (selectedMentorId !== null) {
     if (selectedMentorId) {
-      mentor = mentors.find((m) => m.id === selectedMentorId || m._id === selectedMentorId) || course.mentor;
+      mentor = mentorList.find((m) => m.id === selectedMentorId || m._id === selectedMentorId) || course.mentor;
     } else {
-      mentor = course.mentor || mentors.find((m) => m.id === course.mentorId || m._id === course.mentorId);
+      mentor = course.mentor || mentorList.find((m) => m.id === course.mentorId || m._id === course.mentorId);
     }
   }
 
@@ -55,7 +56,7 @@ export function CourseCard({ course, selectedMentorId, mentors = [], onMentorCha
           )}
         </p>
 
-        {hasMentorControls && mentors.length > 0 && (
+        {hasMentorControls && mentorList.length > 0 && (
           <div className="mt-4 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-3">
             <label className="text-xs font-bold uppercase tracking-wide text-muted" htmlFor={`mentor-${course.id || course._id}`}>
               Celebrity mentor
@@ -72,7 +73,7 @@ export function CourseCard({ course, selectedMentorId, mentors = [], onMentorCha
                 className="h-10 min-w-0 flex-1 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3 text-sm text-[hsl(var(--foreground))] outline-none focus:ring-2 focus:ring-upto-blue"
               >
                 <option value="">Default mentor</option>
-                {mentors.map((item) => (
+                {mentorList.map((item) => (
                   <option key={item.id || item._id} value={item.id || item._id}>
                     {item.name}
                   </option>

@@ -1,12 +1,13 @@
+import "./config/env.js";
+import express from "express";
+
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, ".env") });
-import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -227,6 +228,20 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
+
+    // Auto-seed if database is freshly created and mentors or courses are empty
+    try {
+      const { Mentor, Course } = await import("./models/index.js");
+      const mentorCount = await Mentor.countDocuments();
+      const courseCount = await Course.countDocuments();
+      if (mentorCount === 0 || courseCount === 0) {
+        console.log("[DB] Empty collections detected. Running automated seed script...");
+        const { seedDatabase } = await import("./scripts/seed.js");
+        await seedDatabase();
+      }
+    } catch (seedErr) {
+      console.warn("[DB] Automated seed check skipped/failed:", seedErr.message);
+    }
 
     return new Promise((resolve) => {
       const server = app.listen(PORT, () => {

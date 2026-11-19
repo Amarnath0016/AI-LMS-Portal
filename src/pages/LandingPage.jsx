@@ -40,17 +40,25 @@ export default function LandingPage() {
   const { data: mentors = [] } = useApiQuery(() => mentorApi.getAll(), []);
   const { data: leaderboardData } = useApiQuery(() => leaderboardApi.get(), []);
 
-  const leaderboard = leaderboardData?.allTime || leaderboardData?.weekly || [];
+  const mentorsList = Array.isArray(mentors) ? mentors : [];
+  const coursesList = Array.isArray(courses) ? courses : [];
+  const leaderboard = Array.isArray(leaderboardData?.allTime)
+    ? leaderboardData.allTime
+    : Array.isArray(leaderboardData?.weekly)
+    ? leaderboardData.weekly
+    : Array.isArray(leaderboardData)
+    ? leaderboardData
+    : [];
 
   useEffect(() => {
-    if (mentors.length === 0) return;
+    if (mentorsList.length === 0) return;
     const timer = setInterval(() => {
-      setActiveCard((p) => (p + 1) % mentors.length);
+      setActiveCard((p) => (p + 1) % mentorsList.length);
     }, 3500);
     return () => clearInterval(timer);
-  }, [mentors.length]);
+  }, [mentorsList.length]);
 
-  const approvedCourses = Array.isArray(courses) ? courses.slice(0, 6) : [];
+  const approvedCourses = coursesList.slice(0, 6);
 
   return (
     <div className="min-h-screen bg-upto-dark text-white">
@@ -124,44 +132,44 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              {mentors.length > 0 && (
+              {mentorsList.length > 0 && (
                 <div
                   className="rounded-xl p-6 transition-all duration-500 min-h-[280px] flex flex-col justify-between"
                   style={{
-                    background: `linear-gradient(135deg, ${mentors[activeCard]?.color || "#1a1a2e"}, #0B0F19)`,
+                    background: `linear-gradient(135deg, ${mentorsList[activeCard]?.color || "#1a1a2e"}, #0B0F19)`,
                   }}
                 >
                   <div className="flex items-start justify-between">
                     <div
                       className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-black text-white shadow-lg ring-2 ring-white/20"
-                      style={{ background: mentors[activeCard]?.accent || "#2563EB" }}
+                      style={{ background: mentorsList[activeCard]?.accent || "#2563EB" }}
                     >
-                      {mentors[activeCard]?.initials || "EM"}
+                      {mentorsList[activeCard]?.initials || "EM"}
                     </div>
                     <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-                      {mentors[activeCard]?.tag || "Technology"}
+                      {mentorsList[activeCard]?.tag || "Technology"}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-black">{mentors[activeCard]?.name}</h3>
-                    <p className="text-sm text-gray-300 mt-1 font-medium">{mentors[activeCard]?.subject}</p>
+                    <h3 className="text-2xl font-black">{mentorsList[activeCard]?.name}</h3>
+                    <p className="text-sm text-gray-300 mt-1 font-medium">{mentorsList[activeCard]?.subject}</p>
                     <p className="mt-3 text-xs text-gray-400 italic line-clamp-2">
-                      &ldquo;{mentors[activeCard]?.bio}&rdquo;
+                      &ldquo;{mentorsList[activeCard]?.bio}&rdquo;
                     </p>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-white/10 pt-4 text-xs text-gray-400">
-                    <span>{mentors[activeCard]?.students || "50K"} students</span>
-                    <span>★ {mentors[activeCard]?.rating || "4.9"} rating</span>
-                    <span className="text-blue-300">{mentors[activeCard]?.courses || 5} courses</span>
+                    <span>{mentorsList[activeCard]?.students || "50K"} students</span>
+                    <span>★ {mentorsList[activeCard]?.rating || "4.9"} rating</span>
+                    <span className="text-blue-300">{mentorsList[activeCard]?.courses || 5} courses</span>
                   </div>
                 </div>
               )}
 
               {/* Dots */}
               <div className="mt-4 flex justify-center gap-2">
-                {mentors.slice(0, 8).map((m, i) => (
+                {mentorsList.slice(0, 8).map((m, i) => (
                   <button
                     key={m.id || m._id || i}
                     onClick={() => setActiveCard(i)}
@@ -195,7 +203,7 @@ export default function LandingPage() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {approvedCourses.map((course) => (
-              <CourseCard key={course.id || course._id} course={course} mentors={mentors} />
+              <CourseCard key={course.id || course._id} course={course} mentors={mentorsList} />
             ))}
           </div>
         </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
  * Lightweight asynchronous query hook supporting loading, error, refetch, and empty states
  */
 export function useApiQuery(apiFn, deps = [], options = {}) {
-  const { initialData = null, enabled = true, transform = null } = options;
+  const { initialData = undefined, enabled = true, transform = null } = options;
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(Boolean(enabled));
   const [error, setError] = useState(null);
@@ -37,6 +37,6 @@ export function useApiQuery(apiFn, deps = [], options = {}) {
     error,
     refetch: execute,
     setData,
-    isEmpty: !loading && !error && (Array.isArray(data) ? data.length === 0 : !data),
+    isEmpty: !loading && !error && (Array.isArray(data) ? data.length === 0 : data === null || data === undefined),
   };
 }

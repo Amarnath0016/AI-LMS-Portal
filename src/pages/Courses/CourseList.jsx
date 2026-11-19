@@ -28,6 +28,8 @@ export default function CourseList() {
     loading: mentorsLoading,
   } = useApiQuery(() => mentorApi.getAll(), []);
 
+  const mentorsList = useMemo(() => (Array.isArray(mentors) ? mentors : []), [mentors]);
+
   const tags = useMemo(() => {
     if (!Array.isArray(courses)) return ["All"];
     return ["All", ...Array.from(new Set(courses.map((c) => c.tag).filter(Boolean)))];
@@ -121,7 +123,7 @@ export default function CourseList() {
             <CourseCard
               key={course.id || course._id}
               course={course}
-              mentors={mentors}
+              mentors={mentorsList}
               selectedMentorId={courseMentors[course.id || course._id]}
               onMentorChange={chooseMentor}
               onMentorRemove={removeMentor}

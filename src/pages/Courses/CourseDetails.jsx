@@ -18,6 +18,7 @@ export default function CourseDetails() {
   const { course, mentor, loading: courseLoading, error: courseError, refetch: refetchCourse } = useFetchCourse(id);
   const { progress, isEnrolled, completeLesson, refetch: refetchProgress } = useCourseProgress(id);
   const { data: allMentors = [] } = useApiQuery(() => mentorApi.getAll(), []);
+  const mentorsList = Array.isArray(allMentors) ? allMentors : [];
 
   const [activeLesson, setActiveLesson] = useState(null);
   const [selectedMentor, setSelectedMentor] = useState(null);
@@ -47,7 +48,7 @@ export default function CourseDetails() {
     );
   }
 
-  const currentMentor = selectedMentor || mentor || allMentors[0];
+  const currentMentor = selectedMentor || mentor || mentorsList[0];
   const lessons = course.lessons || [];
 
   const handleEnrollNow = async () => {
@@ -229,13 +230,13 @@ export default function CourseDetails() {
               )}
             </div>
 
-            {allMentors.length > 1 && (
+            {mentorsList.length > 1 && (
               <details className="mt-4">
                 <summary className="cursor-pointer text-sm text-upto-blue font-medium">
                   Switch to another celebrity persona
                 </summary>
                 <div className="mt-3 space-y-3 max-h-80 overflow-y-auto">
-                  {allMentors
+                  {mentorsList
                     .filter((c) => (c.id || c._id) !== (currentMentor?.id || currentMentor?._id))
                     .map((c) => (
                       <MentorCard

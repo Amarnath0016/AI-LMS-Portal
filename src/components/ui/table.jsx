@@ -1,7 +1,8 @@
 import { cn } from "@/utils";
 
 export function DataTable({ columns, rows, getRowKey, emptyState, className }) {
-  if (!rows.length) return emptyState;
+  const rowList = Array.isArray(rows) ? rows : [];
+  if (!rowList.length) return emptyState || null;
 
   return (
     <div className={cn("app-card overflow-hidden rounded-lg", className)}>
@@ -17,7 +18,7 @@ export function DataTable({ columns, rows, getRowKey, emptyState, className }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-[hsl(var(--border))]">
-            {rows.map((row) => (
+            {rowList.map((row) => (
               <tr key={getRowKey(row)} className="transition-colors hover:bg-[hsl(var(--surface))]">
                 {columns.map((column) => (
                   <td key={column.key} className={cn("px-5 py-4 align-middle text-sm", column.className)}>
