@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Stored securely outside the web root (server/storage/lesson-materials)
+// Stored securely outside the web root (Backend/storage/lesson-materials)
 export const LESSON_MATERIALS_DIR = path.resolve(__dirname, "../storage/lesson-materials");
 
 if (!fs.existsSync(LESSON_MATERIALS_DIR)) {

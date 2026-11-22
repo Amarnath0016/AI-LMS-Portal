@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-server/node_modules/
+Backend/node_modules/
 .pnp
 .pnp.js
 
@@ -14,16 +14,16 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
-server/.env
-server/.env.*
+Backend/.env
+Backend/.env.*
 !.env.example
-!server/.env.example
+!Backend/.env.example
 
 # Local Database & Cache
-server/data/store.json
-server/public/audio/cache/*.wav
-server/uploads/materials/*
-!server/uploads/materials/.gitkeep
+Backend/data/store.json
+Backend/public/audio/cache/*.wav
+Backend/uploads/materials/*
+!Backend/uploads/materials/.gitkeep
 
 # Operating System Files
 .DS_Store

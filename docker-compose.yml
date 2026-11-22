@@ -22,7 +22,7 @@ services:
 
   server:
     build:
-      context: ./server
+      context: ./Backend
       dockerfile: Dockerfile
     container_name: uptoskills-server
     restart: always

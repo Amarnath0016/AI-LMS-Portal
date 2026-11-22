@@ -20,7 +20,7 @@ Under this policy:
 
 ## 2. Mentor Typology and Legal Taxonomy
 
-All mentors within UptoSkills LMS are classified under one of four distinct legal categories defined in the `Mentor` Mongoose schema (`server/models/Mentor.js`):
+All mentors within UptoSkills LMS are classified under one of four distinct legal categories defined in the `Mentor` Mongoose schema (`Backend/models/Mentor.js`):
 
 | Mentor Type | Definition | Verification Requirement | Example Personas |
 |---|---|---|---|
@@ -36,7 +36,7 @@ All mentors within UptoSkills LMS are classified under one of four distinct lega
 The `Mentor` model enforces these ethical constraints at the database level:
 
 ```javascript
-// server/models/Mentor.js
+// Backend/models/Mentor.js
 {
   type: {
     type: String,
@@ -145,6 +145,6 @@ UptoSkills LMS eliminates deceptive prompt designs:
 ## 7. Compliance Verification & Audit
 
 Our automated test suite continuously verifies this policy:
-- `server/tests/mentor_ethics.test.js`: Verifies model taxonomy, activation gates, seed data consent compliance, zero living celebrity impersonation, and disclosure propagation in AI chat.
+- `Backend/tests/mentor_ethics.test.js`: Verifies model taxonomy, activation gates, seed data consent compliance, zero living celebrity impersonation, and disclosure propagation in AI chat.
 - All 10 platform mentors are seeded with explicit `consentDocUrl` and `licenseInfo` references.
 - Periodic audits are conducted prior to platform deployments.

@@ -5,7 +5,7 @@
 [![React Version](https://img.shields.io/badge/React-19.0-blue.svg)](https://react.dev/)
 [![MongoDB Mongoose](https://img.shields.io/badge/MongoDB-Mongoose%208.x-emerald.svg)](https://mongoosejs.com/)
 [![ESLint](https://img.shields.io/badge/ESLint-Clean%20(0%20errors)-success.svg)](eslint.config.js)
-[![Tests](https://img.shields.io/badge/Tests-122%20API%20%2B%20RTL%20Passing-success.svg)](server/tests/)
+[![Tests](https://img.shields.io/badge/Tests-122%20API%20%2B%20RTL%20Passing-success.svg)](Backend/tests/)
 
 An enterprise-grade, ethically grounded Learning Management System (LMS) built with **React 19**, **Node.js (Express ESM)**, **MongoDB (Mongoose)**, and **Google Gemini AI**. Learners study interactive, structured curriculum guided by pedagogical AI mentors featuring real speech synthesis, real-time Web Audio viseme-driven avatars, grounded RAG doubt resolution, and gamified XP leagues.
 
@@ -86,7 +86,7 @@ flowchart TD
 - **Curriculum CRUD**: Drag-and-drop module and lesson reordering with server-enforced ownership checks.
 - **AI Draft Generation**: AI-assisted lecture draft generator populating syllabus, script, and comprehension checks into `draft` status (never auto-published).
 - **Review Workflow**: Multi-stage state machine (`draft` $\rightarrow$ `pending` $\rightarrow$ `approved` / `rejected`) recording reviewer identity and actionable rejection feedback.
-- **Secure File Storage**: Lesson materials uploaded via `multer` with strict MIME/size whitelisting, stored **outside the web root** (`server/uploads/materials`) and guarded by authenticated enrollment checks.
+- **Secure File Storage**: Lesson materials uploaded via `multer` with strict MIME/size whitelisting, stored **outside the web root** (`Backend/uploads/materials`) and guarded by authenticated enrollment checks.
 
 ### 5. Daily Challenge Real Code Sandbox
 - **Subprocess Isolation**: Submissions run in isolated Node.js child processes with strict memory (128 MB) and execution timeout limits (3,000 ms), completely preventing `eval` or `new Function` on the main server thread.
@@ -116,23 +116,23 @@ The platform uses 17 MongoDB Mongoose models with ObjectId references and compou
 
 | Model | File | Primary Responsibility |
 |---|---|---|
-| `User` | `server/models/User.js` | User identities, hashed passwords, roles (`student`, `instructor`, `admin`), XP, streaks |
-| `Mentor` | `server/models/Mentor.js` | Ethical AI personas, taxonomy, vocal profiles, consent documents, activation status |
-| `Course` | `server/models/Course.js` | Course metadata, category, difficulty, pricing, approval state, ownership |
-| `Module` | `server/models/Module.js` | Curriculum sections and ordering index |
-| `Lesson` | `server/models/Lesson.js` | Lesson units, scripts, duration, attachments, quiz questions |
-| `LessonProgress` | `server/models/LessonProgress.js` | Granular per-lesson watch state, playback position, and completion |
-| `Enrollment` | `server/models/Enrollment.js` | Student-to-course enrollments with compound unique index on `{ userId, courseId }` |
-| `Quiz` | `server/models/Quiz.js` | League assessments with questions and hidden server-side answers |
-| `QuizAttempt` | `server/models/QuizAttempt.js` | Graded quiz submissions and scores |
-| `Certificate` | `server/models/Certificate.js` | Tamper-proof graduation certificates with unique verification codes |
-| `DailyChallenge` | `server/models/DailyChallenge.js` | Coding problems, starter code, visible test cases, and hidden test suites |
-| `ChallengeSubmission` | `server/models/ChallengeSubmission.js` | User code submissions, per-test results, and runtime diagnostics |
-| `ForumPost` | `server/models/ForumPost.js` | Technical discussion threads |
-| `ForumComment` | `server/models/ForumComment.js` | Community discussion replies |
-| `Review` | `server/models/Review.js` | Course ratings and student testimonials |
-| `Notification` | `server/models/Notification.js` | In-app alerts, milestones, and system messages |
-| `InstructorApplication`| `server/models/InstructorApplication.js` | Student applications to upgrade privileges to instructor |
+| `User` | `Backend/models/User.js` | User identities, hashed passwords, roles (`student`, `instructor`, `admin`), XP, streaks |
+| `Mentor` | `Backend/models/Mentor.js` | Ethical AI personas, taxonomy, vocal profiles, consent documents, activation status |
+| `Course` | `Backend/models/Course.js` | Course metadata, category, difficulty, pricing, approval state, ownership |
+| `Module` | `Backend/models/Module.js` | Curriculum sections and ordering index |
+| `Lesson` | `Backend/models/Lesson.js` | Lesson units, scripts, duration, attachments, quiz questions |
+| `LessonProgress` | `Backend/models/LessonProgress.js` | Granular per-lesson watch state, playback position, and completion |
+| `Enrollment` | `Backend/models/Enrollment.js` | Student-to-course enrollments with compound unique index on `{ userId, courseId }` |
+| `Quiz` | `Backend/models/Quiz.js` | League assessments with questions and hidden server-side answers |
+| `QuizAttempt` | `Backend/models/QuizAttempt.js` | Graded quiz submissions and scores |
+| `Certificate` | `Backend/models/Certificate.js` | Tamper-proof graduation certificates with unique verification codes |
+| `DailyChallenge` | `Backend/models/DailyChallenge.js` | Coding problems, starter code, visible test cases, and hidden test suites |
+| `ChallengeSubmission` | `Backend/models/ChallengeSubmission.js` | User code submissions, per-test results, and runtime diagnostics |
+| `ForumPost` | `Backend/models/ForumPost.js` | Technical discussion threads |
+| `ForumComment` | `Backend/models/ForumComment.js` | Community discussion replies |
+| `Review` | `Backend/models/Review.js` | Course ratings and student testimonials |
+| `Notification` | `Backend/models/Notification.js` | In-app alerts, milestones, and system messages |
+| `InstructorApplication`| `Backend/models/InstructorApplication.js` | Student applications to upgrade privileges to instructor |
 
 ---
 
@@ -164,7 +164,7 @@ npm run build
   - `AIMentorPlayer.test.jsx`: Accessibility ARIA landmarks, ethics disclosure notice, play/pause controls, keyboard shortcuts (`C`, `M`), and caption synchronization.
   - `LeagueList.test.jsx`: League filtering, search, level categorization, and quiz attempt integration.
   - `ErrorBoundary.test.jsx`: Graceful component error catch, fallback UI, and recovery trigger.
-- **Server Tests (`server/tests/*.test.js`)**:
+- **Server Tests (`Backend/tests/*.test.js`)**:
   - `122 passing tests` across 38 suites covering authentication hardening, token expiry, privilege escalation defense, idempotent course enrollment, progress math, quiz sanitization, certificate verification, instructor course approval lifecycle, sandbox process timeouts, RAG citations, and ethical consent checks.
 
 ---
@@ -186,7 +186,7 @@ cd uptoskills-ai-lms
 npm install
 
 # Install server dependencies
-cd server && npm install && cd ..
+cd Backend && npm install && cd ..
 ```
 
 ### 3. Environment Setup
@@ -195,10 +195,10 @@ cd server && npm install && cd ..
 cp .env.example .env
 
 # Configure backend environment
-cp server/.env.example server/.env
+cp Backend/.env.example Backend/.env
 ```
 
-Ensure `MONGO_URI` and `GEMINI_API_KEY` are populated in `server/.env`.
+Ensure `MONGO_URI` and `GEMINI_API_KEY` are populated in `Backend/.env`.
 
 ### 4. Database Seeding
 Execute the idempotent seed script to populate mentors, courses, modules, quizzes, and demo users:

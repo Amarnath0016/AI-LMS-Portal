@@ -41,10 +41,10 @@ The easiest way to spin up the entire production stack (MongoDB 7.0, Express Ser
    cd uptoskills
    ```
 
-2. Configure environment secrets in `server/.env` (or pass via environment):
+2. Configure environment secrets in `Backend/.env` (or pass via environment):
    ```bash
-   cp server/.env.example server/.env
-   # Edit server/.env with your production secrets (JWT_SECRET, GEMINI_API_KEY, etc.)
+   cp Backend/.env.example Backend/.env
+   # Edit Backend/.env with your production secrets (JWT_SECRET, GEMINI_API_KEY, etc.)
    ```
 
 3. Launch all services:
@@ -75,7 +75,7 @@ The easiest way to spin up the entire production stack (MongoDB 7.0, Express Ser
 1. In the [Render Dashboard](https://dashboard.render.com), create a new **Web Service**.
 2. Connect your Git repository.
 3. Configure the service settings:
-   - **Root Directory**: `server`
+   - **Root Directory**: `Backend`
    - **Environment**: `Node`
    - **Build Command**: `npm ci`
    - **Start Command**: `node server.js`
@@ -103,7 +103,7 @@ The easiest way to spin up the entire production stack (MongoDB 7.0, Express Ser
 1. In [Railway](https://railway.app), create a new project and add a **MongoDB Plugin** or provide your MongoDB Atlas URI.
 2. Add a new **GitHub Repo Service** pointing to the repository.
 3. In Service Settings:
-   - Set **Root Directory** to `/server`.
+   - Set **Root Directory** to `/Backend`.
    - Railway auto-detects `package.json` and runs `npm install` and `npm start`.
 4. Add the environment variables listed in the table above.
 5. In Networking, generate a public domain (e.g. `uptoskills-api.up.railway.app`).
@@ -166,6 +166,6 @@ The easiest way to spin up the entire production stack (MongoDB 7.0, Express Ser
 - [ ] `JWT_SECRET` and `JWT_REFRESH_SECRET` are random, unique, >= 32 characters, and not stored in git.
 - [ ] `ADMIN_ACCESS_CODE` is set to a secure secret.
 - [ ] `CLIENT_ORIGIN` matches the exact deployed frontend origin (CORS protection).
-- [ ] Sensitive uploads directory (`server/uploads/materials`) is secured outside the web root and guarded by authentication & enrollment middleware.
+- [ ] Sensitive uploads directory (`Backend/uploads/materials`) is secured outside the web root and guarded by authentication & enrollment middleware.
 - [ ] Daily Challenge evaluation runs in isolated subprocesses with timeouts and resource ceilings.
 - [ ] All 10 AI mentors display ethical disclosure banners stating they are synthetic AI personas.

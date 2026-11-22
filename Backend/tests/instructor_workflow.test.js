@@ -376,11 +376,11 @@ describe("Instructor Workflow & Permissions Integration Tests", () => {
       uploadedAttachmentFilename = res.body.data.filename;
       uploadedAttachmentId = res.body.data._id;
 
-      // Verify file is stored in server/storage/lesson-materials (outside web root)
+      // Verify file is stored in Backend/storage/lesson-materials (outside web root)
       const expectedStoragePath = path.join(LESSON_MATERIALS_DIR, uploadedAttachmentFilename);
       assert.ok(fs.existsSync(expectedStoragePath), "File must physically exist in storage directory");
       assert.ok(expectedStoragePath.includes("storage/lesson-materials"));
-      assert.ok(!expectedStoragePath.includes("server/public"));
+      assert.ok(!expectedStoragePath.includes("Backend/public"));
     });
 
     it("allows course owner to download uploaded attachment", async () => {
