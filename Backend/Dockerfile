@@ -15,6 +15,10 @@ COPY --chown=node:node --from=deps /app/node_modules ./node_modules
 COPY --chown=node:node package*.json ./
 COPY --chown=node:node . .
 
+# Create writable storage before dropping root privileges.
+RUN mkdir -p /app/storage/lesson-materials \
+    && chown -R node:node /app/storage
+
 # Run container as unprivileged user
 USER node
 
