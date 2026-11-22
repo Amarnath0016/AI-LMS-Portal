@@ -6,14 +6,14 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "./Frontend"),
     },
   },
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: "./src/test/setup.js",
-    include: ["src/**/*.{test,spec}.{js,jsx}"],
+    setupFiles: "./Frontend/test/setup.js",
+    include: ["Frontend/**/*.{test,spec}.{js,jsx}"],
     css: false,
   },
 });

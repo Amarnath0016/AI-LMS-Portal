@@ -28,7 +28,7 @@ export default [
     },
   },
   {
-    files: ["src/store/**/*.{js,jsx}", "src/context/**/*.{js,jsx}"],
+    files: ["Frontend/store/**/*.{js,jsx}", "Frontend/context/**/*.{js,jsx}"],
     rules: {
       "react-refresh/only-export-components": "off",
     },

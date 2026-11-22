@@ -159,7 +159,7 @@ npm run build
 ```
 
 ### Coverage Highlights
-- **Client Tests (`src/**/*.test.jsx`)**:
+- **Client Tests (`Frontend/**/*.test.jsx`)**:
   - `Login.test.jsx`: Form rendering, input validation, student sign-in, and 2FA admin access code flow.
   - `AIMentorPlayer.test.jsx`: Accessibility ARIA landmarks, ethics disclosure notice, play/pause controls, keyboard shortcuts (`C`, `M`), and caption synchronization.
   - `LeagueList.test.jsx`: League filtering, search, level categorization, and quiz attempt integration.
