@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { getHomePath } from "@/config/navigation";
 
 export function PrivateRoute({ children, roles }) {
   const { isAuthenticated, user } = useAuth();
@@ -10,7 +11,8 @@ export function PrivateRoute({ children, roles }) {
   }
 
   if (roles && user && !roles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+    const fallbackPath = getHomePath(user.role);
+    return <Navigate to={fallbackPath} replace />;
   }
 
   return children;

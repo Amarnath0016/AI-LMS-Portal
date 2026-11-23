@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { Factory } from "lucide-react";
 
-export function BrandLogo() {
+export function BrandLogo({ to = "/" }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5">
+    <Link to={to} className="flex items-center gap-2.5">
       <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-upto-blue/30 bg-slate-950 text-white shadow-lg shadow-blue-500/15">
         <div className="absolute inset-x-0 bottom-0 h-1.5 bg-upto-orange" />
         <div className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-upto-blue/60 blur-sm" />

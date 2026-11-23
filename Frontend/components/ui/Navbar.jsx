@@ -6,15 +6,7 @@ import { BrandLogo } from "@/components/ui/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthContext } from "@/store/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
-
-const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Courses", to: "/courses" },
-  { label: "Subscriptions", to: "/subscriptions" },
-  { label: "Leagues", to: "/leagues" },
-  { label: "Dashboard", to: "/dashboard" },
-  { label: "Mentors", to: "/mentors" },
-];
+import { getNavigationForRole, publicTopNav, getHomePath } from "@/config/navigation";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -24,11 +16,19 @@ export function Navbar() {
     "New Python League lesson unlocked",
     "Your dashboard data refreshed",
   ]);
-  const { isAuthenticated } = useAuth();
+
+  const { isAuthenticated, user } = useAuth();
   const { logout, theme, toggleTheme } = useAuthContext();
   const { wishlistCount } = useWishlist();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const role = user?.role || "student";
+  const isStudent = isAuthenticated && role === "student";
+
+  const { topNav, homePath } = isAuthenticated
+    ? getNavigationForRole(role)
+    : { topNav: publicTopNav, homePath: "/" };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -65,10 +65,10 @@ export function Navbar() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
-        <BrandLogo />
+        <BrandLogo to={isAuthenticated ? homePath : "/"} />
 
         <nav className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => (
+          {topNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -88,31 +88,36 @@ export function Navbar() {
         <div className="hidden items-center gap-3 md:flex">
           {isAuthenticated ? (
             <>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="My subscriptions"
-                title="My Subscriptions"
-                onClick={() => navigate("/subscriptions")}
-                className="relative"
-              >
-                <CreditCard className="h-4 w-4 text-upto-blue" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Saved courses"
-                title="My Wishlist"
-                onClick={() => navigate("/wishlist")}
-                className="relative"
-              >
-                <Heart className={`h-4 w-4 ${wishlistCount > 0 ? "fill-red-500 text-red-500" : ""}`} />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
-                    {wishlistCount > 9 ? "9+" : wishlistCount}
-                  </span>
-                )}
-              </Button>
+              {isStudent && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="My subscriptions"
+                    title="My Subscriptions"
+                    onClick={() => navigate("/subscriptions")}
+                    className="relative"
+                  >
+                    <CreditCard className="h-4 w-4 text-upto-blue" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Saved courses"
+                    title="My Wishlist"
+                    onClick={() => navigate("/wishlist")}
+                    className="relative"
+                  >
+                    <Heart className={`h-4 w-4 ${wishlistCount > 0 ? "fill-red-500 text-red-500" : ""}`} />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                        {wishlistCount > 9 ? "9+" : wishlistCount}
+                      </span>
+                    )}
+                  </Button>
+                </>
+              )}
+
               <div className="relative">
                 <Button
                   variant="ghost"
@@ -141,13 +146,18 @@ export function Navbar() {
                   </div>
                 )}
               </div>
+
               <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={toggleTheme}>
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleMyXp}>
-                <Trophy className="mr-1.5 h-4 w-4 text-upto-orange" />
-                My XP
-              </Button>
+
+              {isStudent && (
+                <Button variant="ghost" size="sm" onClick={handleMyXp}>
+                  <Trophy className="mr-1.5 h-4 w-4 text-upto-orange" />
+                  My XP
+                </Button>
+              )}
+
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="mr-1.5 h-4 w-4" />
                 Logout
@@ -179,7 +189,7 @@ export function Navbar() {
 
       {mobileOpen && (
         <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--background))]/98 px-4 py-4 md:hidden">
-          {navItems.map((item) => (
+          {topNav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -196,21 +206,33 @@ export function Navbar() {
             </Button>
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/wishlist"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-muted hover:bg-[hsl(var(--surface))] hover:text-[hsl(var(--foreground))]"
-                >
-                  <span className="flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-red-500 fill-red-500" />
-                    My Wishlist
-                  </span>
-                  {wishlistCount > 0 && (
-                    <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-bold text-red-400">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Link>
+                {isStudent && (
+                  <>
+                    <Link
+                      to="/subscriptions"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-muted hover:bg-[hsl(var(--surface))] hover:text-[hsl(var(--foreground))]"
+                    >
+                      <CreditCard className="h-4 w-4 text-upto-blue" />
+                      My Subscriptions
+                    </Link>
+                    <Link
+                      to="/wishlist"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-muted hover:bg-[hsl(var(--surface))] hover:text-[hsl(var(--foreground))]"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                        My Wishlist
+                      </span>
+                      {wishlistCount > 0 && (
+                        <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-bold text-red-400">
+                          {wishlistCount}
+                        </span>
+                      )}
+                    </Link>
+                  </>
+                )}
                 <Button variant="outline" onClick={handleLogout}>Logout</Button>
               </>
             ) : (

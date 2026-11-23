@@ -5,6 +5,8 @@ import { MainLayout } from "@/layouts/MainLayout";
 import { PrivateRoute } from "@/routes/PrivateRoute";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import RouteLoadingSkeleton from "@/components/common/LoadingSkeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { getHomePath } from "@/config/navigation";
 
 // Route-Level Code Splitting (React.lazy)
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
@@ -44,14 +46,52 @@ const CourseBuilder = lazy(() => import("@/pages/Instructor/CourseBuilder"));
 const SubscriptionPage = lazy(() => import("@/pages/Subscription/SubscriptionPage"));
 const MySubscriptionsPage = lazy(() => import("@/pages/Subscription/MySubscriptionsPage"));
 
+// New Instructor Pages
+const InstructorMyCourses = lazy(() => import("@/pages/Instructor/MyCourses"));
+const InstructorAssessments = lazy(() => import("@/pages/Instructor/QuizzesAndChallenges"));
+const InstructorStudents = lazy(() => import("@/pages/Instructor/StudentProgress"));
+const InstructorReviews = lazy(() => import("@/pages/Instructor/ReviewsAndRatings"));
+const InstructorEarnings = lazy(() => import("@/pages/Instructor/Earnings"));
+
+// New Admin Pages
+const InstructorApplications = lazy(() => import("@/pages/Admin/InstructorApplications"));
+const AdminAIMentors = lazy(() => import("@/pages/Admin/AIMentors"));
+const AdminForumModeration = lazy(() => import("@/pages/Admin/ForumModeration"));
+const AdminSubscriptionPlans = lazy(() => import("@/pages/Admin/SubscriptionPlans"));
+const AdminSubscriptionsList = lazy(() => import("@/pages/Admin/SubscriptionsList"));
+const AdminSettings = lazy(() => import("@/pages/Admin/AdminSettings"));
+
+function DashboardRoute() {
+  const { user } = useAuth();
+  if (user?.role === "instructor") {
+    return <Navigate to="/instructor-dashboard" replace />;
+  }
+  if (user?.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
+  return (
+    <MainLayout>
+      <StudentDashboard />
+    </MainLayout>
+  );
+}
+
+function WildcardRoute() {
+  const { isAuthenticated, user } = useAuth();
+  if (isAuthenticated && user) {
+    return <Navigate to={getHomePath(user.role)} replace />;
+  }
+  return <Navigate to="/" replace />;
+}
+
 export default function AppRouter() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
         <Suspense fallback={<RouteLoadingSkeleton />}>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
-
             <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
             <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
             <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
@@ -59,19 +99,12 @@ export default function AppRouter() {
             <Route path="/verify/:code" element={<VerifyCertificate />} />
             <Route path="/verify" element={<VerifyCertificate />} />
 
+            {/* Catalog & Course Viewing (Shared / Accessible) */}
             <Route
               path="/courses"
               element={
                 <PrivateRoute>
                   <MainLayout><CourseList /></MainLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/leagues"
-              element={
-                <PrivateRoute>
-                  <MainLayout><LeagueList /></MainLayout>
                 </PrivateRoute>
               }
             />
@@ -84,18 +117,60 @@ export default function AppRouter() {
               }
             />
             <Route
-              path="/subscribe"
+              path="/mentors"
               element={
                 <PrivateRoute>
-                  <MainLayout><SubscriptionPage /></MainLayout>
+                  <MainLayout><MentorList /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+
+            {/* Student-Only Learning & Career Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute roles={["student"]}>
+                  <DashboardRoute />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/daily-challenge"
+              element={
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><DailyChallengePage /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/leagues"
+              element={
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><LeagueList /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/leaderboard"
+              element={
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><LeaderboardPage /></MainLayout>
                 </PrivateRoute>
               }
             />
             <Route
               path="/subscriptions"
               element={
-                <PrivateRoute>
+                <PrivateRoute roles={["student"]}>
                   <MainLayout><MySubscriptionsPage /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/subscribe"
+              element={
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><SubscriptionPage /></MainLayout>
                 </PrivateRoute>
               }
             />
@@ -104,44 +179,68 @@ export default function AppRouter() {
               element={<Navigate to="/subscriptions" replace />}
             />
             <Route
-              path="/dashboard"
+              path="/study-planner"
               element={
-                <PrivateRoute>
-                  <MainLayout><StudentDashboard /></MainLayout>
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><StudyPlannerPage /></MainLayout>
                 </PrivateRoute>
               }
             />
-
-            {/* Student Hub Routes */}
             <Route
-              path="/profile"
+              path="/achievement-badges"
               element={
-                <PrivateRoute>
-                  <MainLayout><ProfilePage /></MainLayout>
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><AchievementBadgesPage /></MainLayout>
                 </PrivateRoute>
               }
             />
             <Route
               path="/achievements"
               element={
-                <PrivateRoute>
+                <PrivateRoute roles={["student"]}>
                   <MainLayout><AchievementsPage /></MainLayout>
                 </PrivateRoute>
               }
             />
             <Route
-              path="/leaderboard"
+              path="/career-options"
               element={
-                <PrivateRoute>
-                  <MainLayout><LeaderboardPage /></MainLayout>
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><CareerOptionsPage /></MainLayout>
                 </PrivateRoute>
               }
             />
             <Route
               path="/wishlist"
               element={
-                <PrivateRoute>
+                <PrivateRoute roles={["student"]}>
                   <MainLayout><WishlistPage /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/certificates"
+              element={
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><CertificatesPage /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/feedback"
+              element={
+                <PrivateRoute roles={["student"]}>
+                  <MainLayout><FeedbackPage /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+
+            {/* Shared Authenticated Routes (All Roles) */}
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <MainLayout><ProfilePage /></MainLayout>
                 </PrivateRoute>
               }
             />
@@ -162,22 +261,6 @@ export default function AppRouter() {
               }
             />
             <Route
-              path="/certificates"
-              element={
-                <PrivateRoute>
-                  <MainLayout><CertificatesPage /></MainLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/feedback"
-              element={
-                <PrivateRoute>
-                  <MainLayout><FeedbackPage /></MainLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
               path="/support"
               element={
                 <PrivateRoute>
@@ -186,45 +269,30 @@ export default function AppRouter() {
               }
             />
 
-            {/* Core Learning & Career Routes */}
+            {/* Analytics Route (Instructor + Admin) */}
             <Route
-              path="/daily-challenge"
+              path="/analytics"
               element={
-                <PrivateRoute>
-                  <MainLayout><DailyChallengePage /></MainLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/study-planner"
-              element={
-                <PrivateRoute>
-                  <MainLayout><StudyPlannerPage /></MainLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/achievement-badges"
-              element={
-                <PrivateRoute>
-                  <MainLayout><AchievementBadgesPage /></MainLayout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/career-options"
-              element={
-                <PrivateRoute>
-                  <MainLayout><CareerOptionsPage /></MainLayout>
+                <PrivateRoute roles={["instructor", "admin"]}>
+                  <MainLayout><AnalyticsPage /></MainLayout>
                 </PrivateRoute>
               }
             />
 
+            {/* Instructor Routes */}
             <Route
               path="/instructor-dashboard"
               element={
                 <PrivateRoute roles={["instructor", "admin"]}>
                   <MainLayout><InstructorDashboard /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/instructor/courses"
+              element={
+                <PrivateRoute roles={["instructor", "admin"]}>
+                  <MainLayout><InstructorMyCourses /></MainLayout>
                 </PrivateRoute>
               }
             />
@@ -237,22 +305,39 @@ export default function AppRouter() {
               }
             />
             <Route
-              path="/mentors"
+              path="/instructor/assessments"
               element={
-                <PrivateRoute>
-                  <MainLayout><MentorList /></MainLayout>
+                <PrivateRoute roles={["instructor", "admin"]}>
+                  <MainLayout><InstructorAssessments /></MainLayout>
                 </PrivateRoute>
               }
             />
             <Route
-              path="/analytics"
+              path="/instructor/students"
               element={
                 <PrivateRoute roles={["instructor", "admin"]}>
-                  <MainLayout><AnalyticsPage /></MainLayout>
+                  <MainLayout><InstructorStudents /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/instructor/reviews"
+              element={
+                <PrivateRoute roles={["instructor", "admin"]}>
+                  <MainLayout><InstructorReviews /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/instructor/earnings"
+              element={
+                <PrivateRoute roles={["instructor", "admin"]}>
+                  <MainLayout><InstructorEarnings /></MainLayout>
                 </PrivateRoute>
               }
             />
 
+            {/* Admin Routes */}
             <Route
               path="/admin"
               element={
@@ -270,6 +355,14 @@ export default function AppRouter() {
               }
             />
             <Route
+              path="/admin/instructor-applications"
+              element={
+                <PrivateRoute roles={["admin"]}>
+                  <MainLayout><InstructorApplications /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="/admin/courses"
               element={
                 <PrivateRoute roles={["admin"]}>
@@ -277,8 +370,49 @@ export default function AppRouter() {
                 </PrivateRoute>
               }
             />
+            <Route
+              path="/admin/mentors"
+              element={
+                <PrivateRoute roles={["admin"]}>
+                  <MainLayout><AdminAIMentors /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/forum"
+              element={
+                <PrivateRoute roles={["admin"]}>
+                  <MainLayout><AdminForumModeration /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/plans"
+              element={
+                <PrivateRoute roles={["admin"]}>
+                  <MainLayout><AdminSubscriptionPlans /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/subscriptions"
+              element={
+                <PrivateRoute roles={["admin"]}>
+                  <MainLayout><AdminSubscriptionsList /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <PrivateRoute roles={["admin"]}>
+                  <MainLayout><AdminSettings /></MainLayout>
+                </PrivateRoute>
+              }
+            />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Wildcard Fallback */}
+            <Route path="*" element={<WildcardRoute />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

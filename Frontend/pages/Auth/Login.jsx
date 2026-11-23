@@ -7,8 +7,9 @@ import { Field, FormMessage } from "@/components/ui/form";
 import { useAuthContext } from "@/store/AuthContext";
 import { ROLES } from "@/constants";
 import { authApi } from "@/api/endpoints";
+import { getHomePath } from "@/config/navigation";
 
-const loginRoles = ["student", "admin"];
+const loginRoles = ["student", "instructor", "admin"];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -79,10 +80,9 @@ export default function Login() {
         if (fromLocation) {
           const dest = typeof fromLocation === "string" ? fromLocation : (fromLocation.pathname + (fromLocation.search || ""));
           navigate(dest, { replace: true });
-        } else if (backendUser.role === ROLES.ADMIN || role === "admin") {
-          navigate("/admin");
         } else {
-          navigate("/dashboard");
+          const home = getHomePath(backendUser.role || role);
+          navigate(home);
         }
       })
       .catch((err) => {
@@ -124,7 +124,7 @@ export default function Login() {
             <h2 className="text-3xl font-black">Sign In</h2>
             <p className="mt-2 text-sm text-muted">Welcome back to UptoSkills AI</p>
 
-            <div className="mt-6 grid grid-cols-2 rounded-lg bg-[hsl(var(--surface))] p-1">
+            <div className="mt-6 grid grid-cols-3 rounded-lg bg-[hsl(var(--surface))] p-1">
               {loginRoles.map((r) => (
                 <button
                   key={r}
