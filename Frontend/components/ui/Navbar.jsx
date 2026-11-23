@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Menu, Moon, Sun, Trophy, LogOut, X } from "lucide-react";
+import { Bell, Menu, Moon, Sun, Trophy, LogOut, X, Heart } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthContext } from "@/store/AuthContext";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const navItems = [
   { label: "Home", to: "/" },
@@ -24,6 +25,7 @@ export function Navbar() {
   ]);
   const { isAuthenticated } = useAuth();
   const { logout, theme, toggleTheme } = useAuthContext();
+  const { wishlistCount } = useWishlist();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -85,6 +87,21 @@ export function Navbar() {
         <div className="hidden items-center gap-3 md:flex">
           {isAuthenticated ? (
             <>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Saved courses"
+                title="My Wishlist"
+                onClick={() => navigate("/wishlist")}
+                className="relative"
+              >
+                <Heart className={`h-4 w-4 ${wishlistCount > 0 ? "fill-red-500 text-red-500" : ""}`} />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                    {wishlistCount > 9 ? "9+" : wishlistCount}
+                  </span>
+                )}
+              </Button>
               <div className="relative">
                 <Button
                   variant="ghost"
@@ -167,7 +184,24 @@ export function Navbar() {
               {theme === "dark" ? "Light Mode" : "Dark Mode"}
             </Button>
             {isAuthenticated ? (
-              <Button variant="outline" onClick={handleLogout}>Logout</Button>
+              <>
+                <Link
+                  to="/wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium text-muted hover:bg-[hsl(var(--surface))] hover:text-[hsl(var(--foreground))]"
+                >
+                  <span className="flex items-center gap-2">
+                    <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+                    My Wishlist
+                  </span>
+                  {wishlistCount > 0 && (
+                    <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-bold text-red-400">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
+                <Button variant="outline" onClick={handleLogout}>Logout</Button>
+              </>
             ) : (
               <>
                 <Button variant="ghost" onClick={() => navigate("/login")}>Sign In</Button>

@@ -1,34 +1,50 @@
 import { useState, useMemo } from "react";
-import { Search, Filter, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Filter, BookOpen, AlertCircle, RefreshCw, Heart } from "lucide-react";
 import { Input } from "@/components/common/input";
 import { Button } from "@/components/common/button";
 import { PageLoader } from "@/components/common/Spinner";
 import { CourseCard } from "@/components/ui/CourseCard";
 import { EmptyState, FilterTabs, HeroPanel } from "@/components/ui/dashboard";
 import { useApiQuery } from "@/hooks/useApi";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useAuthContext } from "@/store/AuthContext";
+import { courses as fallbackCourses, celebrities as fallbackMentors } from "@/store/mockData";
 import { courseApi, mentorApi } from "@/api/endpoints";
 
 const levels = ["All", "Beginner", "Intermediate", "Advanced"];
 
 export default function CourseList() {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthContext();
+  const { wishlistCount, isWishlisted, toggleWishlist } = useWishlist();
+
   const [search, setSearch] = useState("");
   const [level, setLevel] = useState("All");
   const [tag, setTag] = useState("All");
   const [courseMentors, setCourseMentors] = useState({});
 
   const {
-    data: courses = [],
+    data: apiCourses,
     loading: coursesLoading,
     error: coursesError,
     refetch: refetchCourses,
   } = useApiQuery(() => courseApi.getAll({ status: "approved" }), []);
 
   const {
-    data: mentors = [],
+    data: apiMentors,
     loading: mentorsLoading,
   } = useApiQuery(() => mentorApi.getAll(), []);
 
-  const mentorsList = useMemo(() => (Array.isArray(mentors) ? mentors : []), [mentors]);
+  const courses = useMemo(() => {
+    if (Array.isArray(apiCourses) && apiCourses.length > 0) return apiCourses;
+    return fallbackCourses.filter((c) => c.status === "approved");
+  }, [apiCourses]);
+
+  const mentorsList = useMemo(() => {
+    if (Array.isArray(apiMentors) && apiMentors.length > 0) return apiMentors;
+    return fallbackMentors || [];
+  }, [apiMentors]);
 
   const tags = useMemo(() => {
     if (!Array.isArray(courses)) return ["All"];
@@ -62,7 +78,7 @@ export default function CourseList() {
     return <PageLoader />;
   }
 
-  if (coursesError) {
+  if (coursesError && courses.length === 0) {
     return (
       <div className="py-16 text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 text-red-400">
@@ -87,7 +103,7 @@ export default function CourseList() {
         </p>
       </HeroPanel>
 
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <Input
@@ -97,6 +113,22 @@ export default function CourseList() {
             className="pl-10"
           />
         </div>
+        {isAuthenticated && (
+          <Button
+            variant="outline"
+            onClick={() => navigate("/wishlist")}
+            className="gap-2 shrink-0 border-[hsl(var(--border))] hover:border-red-500/40 hover:bg-red-500/10"
+            title="View saved courses"
+          >
+            <Heart className={`h-4 w-4 ${wishlistCount > 0 ? "fill-red-500 text-red-500" : "text-muted"}`} />
+            <span>Wishlist</span>
+            {wishlistCount > 0 && (
+              <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-bold text-red-400">
+                {wishlistCount}
+              </span>
+            )}
+          </Button>
+        )}
       </div>
 
       <div className="mb-8 flex flex-wrap gap-2">
@@ -127,6 +159,8 @@ export default function CourseList() {
               selectedMentorId={courseMentors[course.id || course._id]}
               onMentorChange={chooseMentor}
               onMentorRemove={removeMentor}
+              isWishlisted={isWishlisted(course)}
+              onWishlistToggle={toggleWishlist}
             />
           ))}
         </div>

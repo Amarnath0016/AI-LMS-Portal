@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, Circle, Zap, Clock, Users, Play, Award, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft, CheckCircle, Circle, Zap, Clock, Users, Play, Award, AlertCircle, RefreshCw, Heart, Loader2 } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { PageLoader } from "@/components/common/Spinner";
 import { AIMentorPlayer } from "@/components/ui/AIMentorPlayer";
@@ -8,6 +8,8 @@ import { MentorCard } from "@/components/ui/MentorCard";
 import { useFetchCourse } from "@/hooks/useFetchCourse";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { useApiQuery } from "@/hooks/useApi";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useAuthContext } from "@/store/AuthContext";
 import { mentorApi, courseApi } from "@/api/endpoints";
 import { formatCurrency } from "@/utils";
 import { toast } from "sonner";
@@ -23,6 +25,31 @@ export default function CourseDetails() {
   const [activeLesson, setActiveLesson] = useState(null);
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [enrolling, setEnrolling] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  const { isAuthenticated } = useAuthContext();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+
+  const isSaved = course ? isWishlisted(course) : false;
+
+  const handleWishlistToggle = async () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to save courses to your wishlist", {
+        action: {
+          label: "Sign In",
+          onClick: () => navigate("/login"),
+        },
+      });
+      return;
+    }
+    if (!course) return;
+    try {
+      setWishlistLoading(true);
+      await toggleWishlist(course);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
   if (courseLoading) return <PageLoader />;
 
@@ -204,14 +231,34 @@ export default function CourseDetails() {
                 )}
               </div>
             ) : (
-              <Button
-                variant="gradient"
-                className="mt-4 w-full"
-                onClick={handleEnrollNow}
-                disabled={enrolling}
-              >
-                {enrolling ? "Enrolling..." : !course.price || course.price === 0 ? "Start Free" : "Enroll Now"}
-              </Button>
+              <div className="mt-4 space-y-2">
+                <Button
+                  variant="gradient"
+                  className="w-full"
+                  onClick={handleEnrollNow}
+                  disabled={enrolling}
+                >
+                  {enrolling ? "Enrolling..." : !course.price || course.price === 0 ? "Start Free" : "Enroll Now"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleWishlistToggle}
+                  disabled={wishlistLoading}
+                  className={`w-full gap-2 transition-all ${
+                    isSaved
+                      ? "border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                      : "border-gray-700 hover:border-gray-600 hover:bg-gray-800/40 text-gray-300"
+                  }`}
+                >
+                  {wishlistLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-red-400" />
+                  ) : (
+                    <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
+                  )}
+                  {isSaved ? "Saved in Wishlist" : "Save to Wishlist"}
+                </Button>
+              </div>
             )}
           </div>
 

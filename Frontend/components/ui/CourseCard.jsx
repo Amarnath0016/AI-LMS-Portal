@@ -1,10 +1,55 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Users, Zap } from "lucide-react";
+import { Clock, Users, Zap, Heart, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/utils";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useAuthContext } from "@/store/AuthContext";
+import { toast } from "sonner";
 
-export function CourseCard({ course, selectedMentorId, mentors = [], onMentorChange, onMentorRemove }) {
+export function CourseCard({
+  course,
+  selectedMentorId,
+  mentors = [],
+  onMentorChange,
+  onMentorRemove,
+  isWishlisted: isWishlistedProp,
+  onWishlistToggle: onWishlistToggleProp,
+}) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthContext();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+  const [toggling, setToggling] = useState(false);
+
   const mentorList = Array.isArray(mentors) ? mentors : [];
+
+  // Determine if course is wishlisted
+  const isSaved = isWishlistedProp !== undefined ? isWishlistedProp : isWishlisted(course);
+
+  const handleWishlistClick = async (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (!isAuthenticated) {
+      toast.error("Please sign in to save courses to your wishlist", {
+        action: {
+          label: "Sign In",
+          onClick: () => navigate("/login"),
+        },
+      });
+      return;
+    }
+
+    try {
+      setToggling(true);
+      if (onWishlistToggleProp) {
+        await onWishlistToggleProp(course);
+      } else {
+        await toggleWishlist(course);
+      }
+    } finally {
+      setToggling(false);
+    }
+  };
 
   // Find mentor from course object or passed mentors list
   let mentor = null;
@@ -21,12 +66,37 @@ export function CourseCard({ course, selectedMentorId, mentors = [], onMentorCha
   return (
     <div
       onClick={() => navigate(`/courses/${course.id || course._id}`)}
-      className="app-card group cursor-pointer overflow-hidden rounded-lg transition-all hover:-translate-y-1 hover:border-upto-blue/40 hover:shadow-xl hover:shadow-blue-500/10"
+      className="app-card group relative cursor-pointer overflow-hidden rounded-lg transition-all hover:-translate-y-1 hover:border-upto-blue/40 hover:shadow-xl hover:shadow-blue-500/10"
     >
       <div
         className="relative flex h-36 items-end p-4"
         style={{ background: `linear-gradient(135deg, ${mentor?.color || "#1a1a2e"}, #0B0F19)` }}
       >
+        {/* Wishlist Save Button */}
+        <button
+          type="button"
+          disabled={toggling}
+          onClick={handleWishlistClick}
+          aria-label={isSaved ? `Remove ${course.title} from wishlist` : `Save ${course.title} to wishlist`}
+          title={isSaved ? "Remove from wishlist" : "Save to wishlist"}
+          className={`absolute left-3.5 top-3.5 z-10 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-md transition-all duration-200 active:scale-95 disabled:opacity-75 ${
+            isSaved
+              ? "bg-red-500/20 text-red-500 ring-1 ring-red-500/60 shadow-lg shadow-red-500/20 hover:bg-red-500/30 hover:scale-105"
+              : "bg-black/50 text-gray-300 ring-1 ring-white/20 hover:bg-black/80 hover:text-white hover:ring-white/40 hover:scale-105"
+          }`}
+        >
+          {toggling ? (
+            <Loader2 className="h-4 w-4 animate-spin text-red-400" />
+          ) : (
+            <Heart
+              className={`h-4.5 w-4.5 transition-all duration-200 ${
+                isSaved ? "fill-red-500 text-red-500" : "fill-transparent"
+              }`}
+            />
+          )}
+        </button>
+
+        {/* Mentor Avatar */}
         <div
           className="absolute right-4 top-4 flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white ring-2 ring-white/20"
           style={{ background: mentor?.accent || "#2563EB" }}

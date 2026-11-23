@@ -1,13 +1,17 @@
 import { useMemo, useState } from "react";
-import { Heart, Clock, Users, Zap, Trash2, Loader2, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Heart, Clock, Users, Zap, Trash2, Loader2, AlertCircle, ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { HeroPanel, SectionCard, EmptyState } from "@/components/ui/dashboard";
 import { formatCurrency } from "@/utils";
 import { toast } from "sonner";
 import { wishlistApi, courseApi, enrollmentApi } from "@/api/endpoints";
 import { useApiQuery } from "@/hooks/useApi";
+import { useWishlist } from "@/hooks/useWishlist";
 
 export default function WishlistPage() {
+  const navigate = useNavigate();
+  const { refetchWishlist: syncGlobalWishlist } = useWishlist();
   const [enrollingId, setEnrollingId] = useState(null);
   const [removingId, setRemovingId] = useState(null);
 
@@ -33,13 +37,15 @@ export default function WishlistPage() {
     return new Set(list.map((e) => String(e.courseId || e.course?._id || e.course?.id)));
   }, [enrollmentsData]);
 
-  const handleRemove = async (course) => {
+  const handleRemove = async (e, course) => {
+    if (e?.stopPropagation) e.stopPropagation();
     const id = course._id || course.id;
     setRemovingId(id);
     try {
       await wishlistApi.remove(id);
       toast.success(`Removed "${course.title}" from wishlist`);
       refetchWishlist();
+      syncGlobalWishlist();
     } catch (err) {
       toast.error("Failed to remove: " + (err.response?.data?.message || err.message));
     } finally {
@@ -47,13 +53,15 @@ export default function WishlistPage() {
     }
   };
 
-  const handleEnroll = async (course) => {
+  const handleEnroll = async (e, course) => {
+    if (e?.stopPropagation) e.stopPropagation();
     const id = course._id || course.id;
     setEnrollingId(id);
     try {
       await courseApi.enroll(id);
       toast.success(`Successfully enrolled in "${course.title}"!`);
       refetchWishlist();
+      syncGlobalWishlist();
       refetchEnrollments();
     } catch (err) {
       toast.error("Enrollment failed: " + (err.response?.data?.message || err.message));
@@ -92,11 +100,22 @@ export default function WishlistPage() {
         )}
 
         {!wishlistLoading && !wishlistError && (isEmpty || savedCourses.length === 0) && (
-          <EmptyState
-            icon={Heart}
-            title="Your wishlist is empty"
-            description="Explore our Course Catalog and save courses you find interesting for later."
-          />
+          <div className="py-8 text-center">
+            <EmptyState
+              icon={Heart}
+              title="Your wishlist is empty"
+              description="Explore our Course Catalog and save courses you find interesting for later."
+            />
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="gradient"
+                onClick={() => navigate("/courses")}
+                className="gap-2 px-6"
+              >
+                <BookOpen className="h-4 w-4" /> Browse Course Catalog
+              </Button>
+            </div>
+          </div>
         )}
 
         {!wishlistLoading && !wishlistError && savedCourses.length > 0 && (
@@ -111,7 +130,8 @@ export default function WishlistPage() {
               return (
                 <div
                   key={courseId}
-                  className="app-card group relative overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all hover:-translate-y-1 hover:border-upto-blue/30 hover:shadow-lg hover:shadow-blue-500/5"
+                  onClick={() => navigate(`/courses/${courseId}`)}
+                  className="app-card group relative cursor-pointer overflow-hidden rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] transition-all hover:-translate-y-1 hover:border-upto-blue/30 hover:shadow-lg hover:shadow-blue-500/5"
                 >
                   {/* Card Header Background */}
                   <div className="h-28 bg-gradient-to-r from-upto-blue/10 to-indigo-500/10 p-4 relative">
@@ -121,7 +141,7 @@ export default function WishlistPage() {
                     <button
                       type="button"
                       disabled={removingId === courseId}
-                      onClick={() => handleRemove(course)}
+                      onClick={(e) => handleRemove(e, course)}
                       className="absolute right-4 top-4 rounded-full bg-red-500/10 p-2 text-red-400 hover:bg-red-500 hover:text-white transition-all shadow-sm disabled:opacity-50"
                       title="Remove from wishlist"
                     >
@@ -141,6 +161,13 @@ export default function WishlistPage() {
                     <h3 className="mt-1 text-sm font-black text-[hsl(var(--foreground))] line-clamp-2 min-h-[40px] leading-snug group-hover:text-upto-blue transition-colors">
                       {course.title}
                     </h3>
+                    <p className="mt-1 text-xs text-muted">
+                      {course.mentor ? (
+                        <>with <span className="text-upto-blue font-medium">{course.mentor.name} AI</span></>
+                      ) : (
+                        <span className="font-medium text-muted">AI Mentor Curriculum</span>
+                      )}
+                    </p>
                     <p className="mt-2 text-xs text-muted leading-relaxed line-clamp-2">
                       {course.description}
                     </p>
@@ -172,7 +199,7 @@ export default function WishlistPage() {
                           variant="gradient"
                           size="sm"
                           disabled={enrollingId === courseId}
-                          onClick={() => handleEnroll(course)}
+                          onClick={(e) => handleEnroll(e, course)}
                           className="px-4 py-1.5"
                         >
                           {enrollingId === courseId ? (

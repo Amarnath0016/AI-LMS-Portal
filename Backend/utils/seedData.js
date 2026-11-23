@@ -758,6 +758,336 @@ export const seedCourses = [
       }
     ],
     status: "approved"
+  },
+  {
+    id: 9,
+    title: "Data Structures & Algorithms Mastery",
+    mentorId: 8,
+    level: "Intermediate",
+    duration: "40h",
+    price: 0,
+    tag: "Computer Science",
+    enrolled: "45K",
+    xp: 5500,
+    league: "DSA Arena",
+    description: "Master foundational computer science algorithms, memory profiling, trees, graph traversal, and dynamic programming.",
+    lessons: [
+      {
+        id: 1,
+        title: "Big-O Time & Space Complexity Analysis",
+        duration: "28 min",
+        completed: false,
+        script: "Analyzing algorithmic efficiency through asymptotic notation: Big-O, Big-Omega, and Big-Theta.",
+        text: "Time complexity characterizes the rate of growth of execution time relative to input size n. We analyze worst-case, average-case, and amortized bounds.",
+        transcript: "Welcome to algorithmic analysis. Before writing a line of code, we must understand how our memory and CPU requirements scale.",
+        pdfNotes: "Big-O cheat sheet: O(1) < O(log n) < O(n) < O(n log n) < O(n^2) < O(2^n)."
+      },
+      {
+        id: 2,
+        title: "Arrays, Hash Maps & Two-Pointer Techniques",
+        duration: "35 min",
+        completed: false,
+        script: "Hash maps provide O(1) average lookup. Let's solve two-pointer and sliding window interview patterns.",
+        text: "Hash collision strategies include chaining with linked lists and open addressing with linear probing.",
+        transcript: "Two-pointer techniques reduce quadratic search spaces down to linear O(n) passes on sorted arrays.",
+        pdfNotes: "Key patterns: opposite-direction pointers, fast/slow pointers, sliding window dynamic bounds."
+      },
+      {
+        id: 3,
+        title: "Binary Trees, Heaps & Graph Traversal",
+        duration: "42 min",
+        completed: false,
+        script: "Tree data structures mirror hierarchical domains. We will implement BFS, DFS, and Dijkstra's shortest path.",
+        text: "Binary search trees maintain the invariant that left subtree nodes are smaller than parent nodes. Priority queues use binary heaps with O(log n) insertions.",
+        transcript: "Let's explore graph traversals. Breadth-First Search uses queues for shortest path in unweighted graphs.",
+        pdfNotes: "Graph representations: Adjacency matrix vs Adjacency list tradeoffs."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 10,
+    title: "Cybersecurity, Ethical Hacking & Defensive Ops",
+    mentorId: 2,
+    level: "Beginner",
+    duration: "26h",
+    price: 0,
+    tag: "Cybersecurity",
+    enrolled: "31K",
+    xp: 3200,
+    league: "Cyber Defense",
+    description: "Learn network penetration testing, OWASP Top 10 vulnerabilities, cryptography, threat modeling, and defensive system hardening.",
+    lessons: [
+      {
+        id: 1,
+        title: "Security Foundations & Threat Modeling",
+        duration: "22 min",
+        completed: false,
+        script: "The CIA triad: Confidentiality, Integrity, and Availability. How to identify attack vectors using the STRIDE framework.",
+        text: "Threat modeling identifies assets, adversaries, threats, and defensive countermeasures before software deployment.",
+        transcript: "Security is not a product; it is an ongoing engineering process. In this module, we examine foundational threat modeling.",
+        pdfNotes: "STRIDE checklist: Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege."
+      },
+      {
+        id: 2,
+        title: "OWASP Top 10 Web Vulnerabilities & Exploitation Defense",
+        duration: "38 min",
+        completed: false,
+        script: "SQL injection, Cross-Site Scripting (XSS), and Cross-Site Request Forgery (CSRF). How to audit and prevent them.",
+        text: "Web vulnerability prevention requires parameterized SQL queries, context-aware HTML escaping, and secure CSRF tokens.",
+        transcript: "Let's inspect how attackers inject malicious payloads through unfiltered form inputs and URL parameters.",
+        pdfNotes: "OWASP mitigation checklist: Always parameterize queries, use Content Security Policy (CSP), and enforce HTTPS."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 11,
+    title: "Full-Stack Next.js 15 & Node.js Microservices",
+    mentorId: 9,
+    level: "Intermediate",
+    duration: "32h",
+    price: 1999,
+    tag: "Full-Stack",
+    enrolled: "28K",
+    xp: 3800,
+    league: "Web Development",
+    description: "Build enterprise full-stack web applications with Next.js 15 App Router, Server Actions, TypeScript, Node.js microservices, and Prisma ORM.",
+    lessons: [
+      {
+        id: 1,
+        title: "Next.js 15 App Router & Server Components",
+        duration: "25 min",
+        completed: false,
+        script: "React Server Components render on the server, sending zero client bundle JS for non-interactive content.",
+        text: "Next.js 15 leverages React Server Components (RSC) to stream HTML directly from the server, drastically cutting First Contentful Paint.",
+        transcript: "In this lesson, we explore how Next.js 15 splits client and server components using the 'use client' and 'use server' directives.",
+        pdfNotes: "Architecture rules: Keep data fetching on the server. Push client interactivity to leaf components."
+      },
+      {
+        id: 2,
+        title: "Server Actions, Mutations & Optimistic UI",
+        duration: "30 min",
+        completed: false,
+        script: "Server Actions mutate backend databases with progressive enhancement and zero client API boilerplate.",
+        text: "Using useOptimistic alongside server actions allows instant client feedback while server-side database writes occur asynchronously.",
+        transcript: "Watch how the UI responds instantaneously to user input before the server round-trip concludes.",
+        pdfNotes: "Pattern: const [optimisticState, setOptimistic] = useOptimistic(state, updateFn)."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 12,
+    title: "DevOps, Docker & Kubernetes in Production",
+    mentorId: 7,
+    level: "Advanced",
+    duration: "35h",
+    price: 2999,
+    tag: "DevOps",
+    enrolled: "22K",
+    xp: 4600,
+    league: "DevOps League",
+    description: "Containerize microservices with Docker, orchestrate scalable clusters with Kubernetes, and implement GitOps CI/CD with GitHub Actions & Terraform.",
+    lessons: [
+      {
+        id: 1,
+        title: "Multi-Stage Dockerfile Optimization & Security",
+        duration: "30 min",
+        completed: false,
+        script: "Multi-stage Docker builds reduce image sizes from 1GB to under 50MB using lightweight Alpine and Distroless bases.",
+        text: "Docker multi-stage builds separate build dependencies from runtime environments, preventing source code and compilation tooling leakage.",
+        transcript: "We will build a production container image using non-root users and slim runtime baselines.",
+        pdfNotes: "Best practices: Use .dockerignore, order layers by cache stability, and never run containers as root."
+      },
+      {
+        id: 2,
+        title: "Kubernetes Deployments, Ingress & Helm Charts",
+        duration: "38 min",
+        completed: false,
+        script: "Orchestrate zero-downtime rolling updates, configure horizontal pod autoscaling (HPA), and package manifests with Helm.",
+        text: "Kubernetes declarative configuration continuously reconciles desired cluster state against actual running pod state.",
+        transcript: "In this hands-on lab, we configure Ingress routing, TLS cert-manager, and rolling zero-downtime deployments.",
+        pdfNotes: "Kubernetes manifests: Deployment, Service (ClusterIP/LoadBalancer), Ingress, HorizontalPodAutoscaler."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 13,
+    title: "Blockchain & Smart Contract Architecture",
+    mentorId: 1,
+    level: "Intermediate",
+    duration: "27h",
+    price: 3299,
+    tag: "Blockchain",
+    enrolled: "13K",
+    xp: 3600,
+    league: "Web3 League",
+    description: "Learn smart contracts, Solidity security patterns, decentralized storage, and cryptographic consensus from first principles.",
+    lessons: [
+      {
+        id: 1,
+        title: "Blockchain Mechanics & Cryptographic Hashing",
+        duration: "26 min",
+        completed: false,
+        script: "Merkle trees, SHA-256 cryptographic hashing, and Byzantine fault-tolerant consensus mechanisms.",
+        text: "Blockchains are append-only distributed ledgers cryptographically linked via hash pointers, preventing historical transaction tampering.",
+        transcript: "Let's deconstruct how blocks are formed, verified by consensus, and linked across distributed validator nodes.",
+        pdfNotes: "Consensus primitives: Proof-of-Work vs Proof-of-Stake, Merkle tree verification, and elliptic curve signatures."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 14,
+    title: "Ethical Hacking & Penetration Testing Lab",
+    mentorId: 4,
+    level: "Advanced",
+    duration: "31h",
+    price: 4499,
+    tag: "Cybersecurity",
+    enrolled: "18K",
+    xp: 5100,
+    league: "Cyber Defense",
+    description: "Hands-on ethical hacking, network reconnaissance, OWASP Top 10 web vulnerabilities, exploit mitigation, and penetration reporting.",
+    lessons: [
+      {
+        id: 1,
+        title: "Network Reconnaissance & Port Scanning",
+        duration: "29 min",
+        completed: false,
+        script: "Using Nmap, Masscan, and passive DNS intelligence to discover exposed network attack surfaces.",
+        text: "Network reconnaissance involves probing open TCP/UDP ports, banner grabbing, and identifying vulnerable software versions.",
+        transcript: "In our sandbox lab, we conduct structured vulnerability assessments adhering to ethical disclosure guidelines.",
+        pdfNotes: "Tools: Nmap syntax (-sS, -sV, -Pn), Wireshark packet capture, and vulnerability scoring with CVSS."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 15,
+    title: "Generative AI, RAG & LLM App Builder",
+    mentorId: 2,
+    level: "Advanced",
+    duration: "30h",
+    price: 3499,
+    tag: "Artificial Intelligence",
+    enrolled: "38K",
+    xp: 4900,
+    league: "GenAI League",
+    description: "Build production-ready GenAI apps: LangChain, vector retrieval (Pinecone/Milvus), RAG workflows, agentic tool use, and evaluation.",
+    lessons: [
+      {
+        id: 1,
+        title: "Prompting Foundations & Gemini Interactions",
+        duration: "24 min",
+        completed: false,
+        script: "Zero-shot, few-shot, and chain-of-thought prompting strategies with structured JSON output enforcement.",
+        text: "Modern LLMs respond best to clear role definitions, explicit constraints, and schema-constrained decoding.",
+        transcript: "Let's explore how to engineer prompts that minimize hallucination and guarantee deterministic schema outputs.",
+        pdfNotes: "Techniques: Chain-of-thought, ReAct prompting framework, and schema enforcement with Zod/Pydantic."
+      },
+      {
+        id: 2,
+        title: "RAG Architecture & Vector Indexing",
+        duration: "33 min",
+        completed: false,
+        script: "Chunking documents, generating dense embeddings, and querying vector databases with cosine similarity.",
+        text: "Retrieval-Augmented Generation grounds LLM answers in external domain knowledge, eliminating knowledge-cutoff limitations.",
+        transcript: "We will build an end-to-end RAG pipeline that ingests technical PDFs and produces cited answers.",
+        pdfNotes: "Vector index strategies: HNSW vs IVF, chunk size tradeoffs (500 tokens with 50-token overlap)."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 16,
+    title: "System Design & High-Scalability Architecture",
+    mentorId: 1,
+    level: "Advanced",
+    duration: "36h",
+    price: 3999,
+    tag: "System Design",
+    enrolled: "26K",
+    xp: 5200,
+    league: "Architecture League",
+    description: "Architect distributed systems handling millions of requests: horizontal partitioning, Redis caching, Kafka message streaming, and database sharding.",
+    lessons: [
+      {
+        id: 1,
+        title: "Scalability Axioms & Latency Budgets",
+        duration: "30 min",
+        completed: false,
+        script: "The CAP theorem, PACELC theorem, SLA requirements, and horizontal scaling patterns.",
+        text: "Designing high-scale systems requires establishing p99 latency targets, identifying single points of failure, and designing for partition tolerance.",
+        transcript: "Let's calculate latency budgets: L1 cache 1ns, RAM 100ns, SSD read 16us, network round-trip across continents 150ms.",
+        pdfNotes: "Fundamental tradeoff: Consistency vs Availability under network partitions (CAP theorem)."
+      },
+      {
+        id: 2,
+        title: "Load Balancing & Edge CDN Distribution",
+        duration: "35 min",
+        completed: false,
+        script: "Layer 4 vs Layer 7 load balancing, consistent hashing, and edge content caching.",
+        text: "Layer 7 reverse proxies inspect HTTP headers to intelligently route traffic across microservice clusters.",
+        transcript: "We will configure consistent hashing algorithms to distribute requests evenly without cache stampedes.",
+        pdfNotes: "Load balancing algorithms: Round Robin, Weighted Least Connections, IP Hash, Consistent Hashing."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 17,
+    title: "Database Internals: PostgreSQL, NoSQL & Distributed Storage",
+    mentorId: 8,
+    level: "Intermediate",
+    duration: "24h",
+    price: 1799,
+    tag: "Database",
+    enrolled: "19K",
+    xp: 3100,
+    league: "Data Engineering",
+    description: "Deep dive into PostgreSQL query planning, indexing internals (B-Trees, GIN), ACID transactions, MVCC, and distributed NoSQL consensus.",
+    lessons: [
+      {
+        id: 1,
+        title: "Storage Engines, Disk Pages & B-Trees",
+        duration: "25 min",
+        completed: false,
+        script: "How relational databases structure 8KB disk pages and traverse B-Tree index structures.",
+        text: "Database storage engines organize rows into pages on disk. B-Trees keep index depth small (typically 3-4 levels) for millions of records.",
+        transcript: "In this lecture, we examine why primary keys with clustered indexes yield instantaneous record retrieval.",
+        pdfNotes: "Key concepts: WAL (Write-Ahead Logging), dirty pages, checkpointing, and buffer pool caching."
+      }
+    ],
+    status: "approved"
+  },
+  {
+    id: 18,
+    title: "Mobile App Development with React Native & Expo",
+    mentorId: 9,
+    level: "Intermediate",
+    duration: "28h",
+    price: 2199,
+    tag: "Mobile",
+    enrolled: "16K",
+    xp: 3400,
+    league: "Mobile League",
+    description: "Build cross-platform iOS and Android apps with React Native, Expo Router, native gestures, offline caching, and push notifications.",
+    lessons: [
+      {
+        id: 1,
+        title: "Expo Router & File-Based Navigation",
+        duration: "22 min",
+        completed: false,
+        script: "Deep linking, stack and tab layouts, and native navigation patterns with Expo Router.",
+        text: "Expo Router brings URL-driven, file-based routing to mobile devices, matching web conventions with native transitions.",
+        transcript: "Let's create a smooth multi-screen navigation hierarchy with tab bars and stack modal presentations.",
+        pdfNotes: "Navigation guide: Stack.Screen, Tabs, deep link universal URLs, and typed routes."
+      }
+    ],
+    status: "approved"
   }
 ];
 

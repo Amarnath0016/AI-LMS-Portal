@@ -9,6 +9,7 @@ import {
   PlayCircle,
   Trophy,
   UserRound,
+  Heart,
   Zap,
   Calendar,
   CheckSquare,
@@ -161,7 +162,7 @@ export default function StudentDashboard() {
               },
               { label: "Ask Community", icon: MessageCircle, onClick: () => navigate("/forum") },
               { label: "Play Leagues", icon: Trophy, onClick: () => navigate("/leagues") },
-              { label: "Saved Courses", icon: UserRound, onClick: () => navigate("/wishlist") },
+              { label: "Saved Courses", icon: Heart, onClick: () => navigate("/wishlist") },
             ]}
           />
         </div>
