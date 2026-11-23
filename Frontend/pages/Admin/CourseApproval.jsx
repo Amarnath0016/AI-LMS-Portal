@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { CheckCircle, XCircle, Clock, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Loader2, AlertCircle, Lock, ShieldCheck, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/common/button";
+import { Input } from "@/components/common/input";
 import { EmptyState, HeroPanel, StatusBadge } from "@/components/ui/dashboard";
 import { courseApi, adminApi, mentorApi } from "@/api/endpoints";
 import { useApiQuery } from "@/hooks/useApi";
@@ -66,6 +67,19 @@ export default function CourseApproval() {
     }
   };
 
+  const handleToggleAccess = async (course) => {
+    const id = course._id || course.id;
+    const nextType = course.accessType === "paid" ? "free" : "paid";
+    const nextPrice = nextType === "free" ? 0 : (course.price || 2999);
+    try {
+      await adminApi.updateCourseAccess(id, { accessType: nextType, price: nextPrice });
+      toast.success(`Course updated to ${nextType.toUpperCase()} (₹${nextPrice})`);
+      refetchCourses();
+    } catch (err) {
+      toast.error("Failed to update access type: " + (err.response?.data?.message || err.message));
+    }
+  };
+
   return (
     <div>
       <HeroPanel>
@@ -126,6 +140,11 @@ export default function CourseApproval() {
                           Pending
                         </StatusBadge>
                         <span className="text-xs text-muted">{course.league || "Professional Track"}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
+                          course.accessType === "paid" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        }`}>
+                          {course.accessType === "paid" ? `PAID (₹${course.price || 0})` : "FREE"}
+                        </span>
                       </div>
                       <h3 className="mt-1 text-lg font-bold">{course.title}</h3>
                       <p className="text-sm text-muted">
@@ -134,7 +153,16 @@ export default function CourseApproval() {
                       <p className="mt-2 max-w-xl text-sm text-muted">{course.description}</p>
                     </div>
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex flex-col sm:flex-row gap-2 shrink-0 items-start sm:items-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleAccess(course)}
+                      className="text-xs gap-1"
+                      title="Switch between Free and Paid"
+                    >
+                      <Tag className="h-3.5 w-3.5" /> Toggle {course.accessType === "paid" ? "to Free" : "to Paid"}
+                    </Button>
                     <Button
                       variant="default"
                       size="sm"

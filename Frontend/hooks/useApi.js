@@ -20,6 +20,19 @@ export function useApiQuery(apiFn, deps = [], options = {}) {
       setData(finalData);
       return finalData;
     } catch (err) {
+      if (
+        err.response?.status === 402 ||
+        err.response?.data?.code === "SUBSCRIPTION_REQUIRED"
+      ) {
+        const courseId = err.response?.data?.courseId;
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.startsWith("/subscribe")
+        ) {
+          const target = courseId ? `/subscribe?course=${courseId}` : "/subscribe";
+          window.location.href = target;
+        }
+      }
       const msg = err.response?.data?.message || err.message || "Failed to load data";
       setError(msg);
     } finally {

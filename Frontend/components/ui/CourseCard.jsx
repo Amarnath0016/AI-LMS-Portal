@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Users, Zap, Heart, Loader2 } from "lucide-react";
+import { Clock, Users, Zap, Heart, Loader2, Lock, Check } from "lucide-react";
 import { formatCurrency } from "@/utils";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useAuthContext } from "@/store/AuthContext";
 import { toast } from "sonner";
 
@@ -18,9 +19,14 @@ export function CourseCard({
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthContext();
   const { isWishlisted, toggleWishlist } = useWishlist();
+  const { hasAccess, isSubscribedToCourse } = useSubscription();
   const [toggling, setToggling] = useState(false);
 
   const mentorList = Array.isArray(mentors) ? mentors : [];
+
+  const isFree = course.accessType === "free" || (!course.accessType && (!course.price || course.price === 0));
+  const userHasAccess = hasAccess(course);
+  const userIsSubscribed = isSubscribedToCourse(course);
 
   // Determine if course is wishlisted
   const isSaved = isWishlistedProp !== undefined ? isWishlistedProp : isWishlisted(course);
@@ -179,11 +185,32 @@ export function CourseCard({
         </div>
 
         <div className="mt-4 flex items-center justify-between border-t border-[hsl(var(--border))] pt-4">
-          <span className="text-lg font-extrabold text-[hsl(var(--foreground))]">
-            {!course.price || course.price === 0 ? "Freemium" : formatCurrency(course.price)}
-          </span>
+          <div className="flex items-center">
+            {userIsSubscribed ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/30">
+                <Check className="h-3.5 w-3.5" /> Subscribed ✓
+              </span>
+            ) : isFree ? (
+              <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-black tracking-wider text-emerald-400 border border-emerald-500/30">
+                FREE
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/subscribe?course=${course.id || course._id}`);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-upto-orange/15 px-3 py-1.5 text-xs font-bold text-upto-orange border border-upto-orange/40 hover:bg-upto-orange hover:text-white transition-all shadow-sm"
+                title="Subscribe to unlock this paid course"
+              >
+                <Lock className="h-3.5 w-3.5" />
+                {course.price ? `₹${Number(course.price).toLocaleString("en-IN")} - Subscribe` : "Subscribe"}
+              </button>
+            )}
+          </div>
           <span className="rounded-lg bg-upto-blue/10 px-4 py-1.5 text-xs font-bold text-upto-blue transition-all group-hover:bg-upto-blue group-hover:text-white">
-            Enroll →
+            {userHasAccess ? "Learn →" : isFree ? "Enroll →" : "Unlock →"}
           </span>
         </div>
       </div>

@@ -10,14 +10,14 @@ import {
   updateCourse,
   deleteCourse,
 } from "../controllers/courseController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, optionalAuth } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
 router.get("/", getAllCourses);
 router.get("/me/enrollments", protect, getMyEnrollments);
-router.get("/:id", getCourseById);
+router.get("/:id", optionalAuth, getCourseById);
 router.post("/:id/enroll", protect, enrollCourse);
 router.patch("/:id/progress", protect, updateCourseProgress);
 router.post("/lessons/:id/complete", protect, completeLesson);

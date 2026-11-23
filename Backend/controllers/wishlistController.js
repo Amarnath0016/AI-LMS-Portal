@@ -13,10 +13,8 @@ const getCourseQuery = (id) => {
 
 export const getMyWishlist = async (req, res) => {
   try {
-    const userId = req.user._id || req.user.id;
-    const wishlistItems = await Wishlist.find({
-      $or: [{ userId }, { userId: req.user._id }, { userId: req.user.id }].filter(Boolean),
-    }).sort({ addedAt: -1 });
+    const userId = req.user._id;
+    const wishlistItems = await Wishlist.find({ userId }).sort({ addedAt: -1 });
 
     const allCourses = await Course.find();
     const allMentors = await Mentor.find();
@@ -81,7 +79,7 @@ export const getMyWishlist = async (req, res) => {
 export const addToWishlist = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const userId = req.user._id || req.user.id;
+    const userId = req.user._id;
 
     const course = await Course.findOne(getCourseQuery(courseId));
     if (!course) {
@@ -112,7 +110,7 @@ export const addToWishlist = async (req, res) => {
 export const removeFromWishlist = async (req, res) => {
   try {
     const { courseId } = req.params;
-    const userId = req.user._id || req.user.id;
+    const userId = req.user._id;
 
     const course = await Course.findOne(getCourseQuery(courseId));
     const targetId = course ? course._id : courseId;

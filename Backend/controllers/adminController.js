@@ -122,6 +122,46 @@ export const approveCourse = async (req, res) => {
   }
 };
 
+export const updateCourseAccess = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { accessType, price, subscriptionPlanIds } = req.body;
+
+    const course = await Course.findOne(getCourseQuery(id));
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found." });
+    }
+
+    if (accessType) {
+      if (!["free", "paid"].includes(accessType)) {
+        return res.status(400).json({ success: false, message: "accessType must be 'free' or 'paid'." });
+      }
+      course.accessType = accessType;
+      if (accessType === "free") {
+        course.price = 0;
+      }
+    }
+
+    if (price !== undefined && course.accessType === "paid") {
+      course.price = Math.max(0, Number(price) || 0);
+    }
+
+    if (subscriptionPlanIds !== undefined) {
+      course.subscriptionPlanIds = subscriptionPlanIds;
+    }
+
+    await course.save();
+
+    return res.json({
+      success: true,
+      message: `Course access updated: ${course.accessType} (₹${course.price}).`,
+      data: course,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const rejectCourse = async (req, res) => {
   try {
     const { id } = req.params;

@@ -169,3 +169,53 @@ The easiest way to spin up the entire production stack (MongoDB 7.0, Express Ser
 - [ ] Sensitive uploads directory (`Backend/uploads/materials`) is secured outside the web root and guarded by authentication & enrollment middleware.
 - [ ] Daily Challenge evaluation runs in isolated subprocesses with timeouts and resource ceilings.
 - [ ] All 10 AI mentors display ethical disclosure banners stating they are synthetic AI personas.
+- [ ] Subscription payment mode is correctly configured (`PAYMENT_MODE=demo` with `ALLOW_DEMO_PAYMENTS=true` for demonstration environments, or `PAYMENT_MODE=razorpay` with real keys).
+
+---
+
+## 6. Subscription Billing & Payment Gateway Configuration
+
+UptoSkills LMS includes a flexible, dual-mode payment gateway architecture supporting both simulated educational demos and real-world merchant processing.
+
+### Dual-Mode Provider Architecture
+Payment processing is handled via provider abstractions in `Backend/services/paymentProviders/`:
+- `demo.js`: Instant simulation engine for testing and evaluators. Validates request formatting, generates unique `DEMO-<uuid>` transaction references, auto-enrolls students, drops card credentials, and returns active subscriptions without charging money.
+- `razorpay.js`: Production-ready Razorpay gateway client stub implementing standard order creation and HMAC-SHA256 signature verification.
+
+### Environment Flags
+Configure the following in your backend environment (`Backend/.env`):
+
+```ini
+# Payment Gateway Mode: 'demo' or 'razorpay' (default: demo)
+PAYMENT_MODE=demo
+
+# Production Safeguard Flag
+# REQUIRED if NODE_ENV=production and PAYMENT_MODE=demo.
+# The server will refuse to start if this flag is missing in production with demo payments enabled.
+ALLOW_DEMO_PAYMENTS=true
+
+# Razorpay Test / Live Credentials (Required only when PAYMENT_MODE=razorpay)
+RAZORPAY_KEY_ID=rzp_test_YourTestKeyIdHere
+RAZORPAY_KEY_SECRET=YourRazorpaySecretHere
+```
+
+### Production Security Guard
+To prevent accidental simulated payment processing in live commercial environments, `Backend/utils/subscriptionUtils.js` enforces a startup check:
+```javascript
+if (process.env.NODE_ENV === "production" && process.env.PAYMENT_MODE === "demo" && process.env.ALLOW_DEMO_PAYMENTS !== "true") {
+  // Refuse server boot with critical security exception
+}
+```
+
+### Transitioning to Razorpay Test / Live Mode
+When ready to connect real payment processing:
+1. Obtain your API keys from the [Razorpay Dashboard](https://dashboard.razorpay.com/) (**Settings** > **API Keys**).
+2. Set the environment variables in your deployment host:
+   ```bash
+   PAYMENT_MODE=razorpay
+   RAZORPAY_KEY_ID=rzp_test_...
+   RAZORPAY_KEY_SECRET=...
+   ```
+3. Install the official SDK if not already bundled (`npm install razorpay` in `Backend/`).
+4. Activate webhook signature verification in `Backend/services/paymentProviders/razorpay.js` by providing `RAZORPAY_WEBHOOK_SECRET`.
+5. No client-side code changes are required: the checkout API transparently accepts Razorpay order handshakes and returns the transaction reference.

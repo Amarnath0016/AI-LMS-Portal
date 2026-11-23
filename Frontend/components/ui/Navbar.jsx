@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Menu, Moon, Sun, Trophy, LogOut, X, Heart } from "lucide-react";
+import { Bell, Menu, Moon, Sun, Trophy, LogOut, X, Heart, CreditCard } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 const navItems = [
   { label: "Home", to: "/" },
   { label: "Courses", to: "/courses" },
+  { label: "Subscriptions", to: "/subscriptions" },
   { label: "Leagues", to: "/leagues" },
   { label: "Dashboard", to: "/dashboard" },
   { label: "Mentors", to: "/mentors" },
@@ -87,6 +88,16 @@ export function Navbar() {
         <div className="hidden items-center gap-3 md:flex">
           {isAuthenticated ? (
             <>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="My subscriptions"
+                title="My Subscriptions"
+                onClick={() => navigate("/subscriptions")}
+                className="relative"
+              >
+                <CreditCard className="h-4 w-4 text-upto-blue" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

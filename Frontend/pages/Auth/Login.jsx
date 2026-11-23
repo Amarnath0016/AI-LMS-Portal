@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight, Github, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/common/button";
@@ -12,6 +12,7 @@ const loginRoles = ["student", "admin"];
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,8 +75,15 @@ export default function Login() {
         setLoading(false);
         setMessage({ type: "success", text: "Signed in successfully. Redirecting..." });
         toast.success("Welcome back!");
-        if (backendUser.role === ROLES.ADMIN || role === "admin") navigate("/admin");
-        else navigate("/dashboard");
+        const fromLocation = location.state?.from;
+        if (fromLocation) {
+          const dest = typeof fromLocation === "string" ? fromLocation : (fromLocation.pathname + (fromLocation.search || ""));
+          navigate(dest, { replace: true });
+        } else if (backendUser.role === ROLES.ADMIN || role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
       })
       .catch((err) => {
         setLoading(false);

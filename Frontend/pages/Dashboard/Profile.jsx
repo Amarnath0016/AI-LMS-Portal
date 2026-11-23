@@ -1,9 +1,24 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/store/AuthContext";
-import { UserRound, Mail, Phone, MapPin, GraduationCap, Edit, Plus, X, Check, Save } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import {
+  UserRound,
+  Mail,
+  Phone,
+  MapPin,
+  GraduationCap,
+  Edit,
+  Plus,
+  X,
+  Save,
+  CreditCard,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
 import { HeroPanel, SectionCard } from "@/components/ui/dashboard";
+import { toast } from "sonner";
 
 const availableAvatars = [
   { code: "AY", name: "Amarnath Yadav", bg: "from-blue-600 to-indigo-600" },
@@ -17,8 +32,23 @@ const availableAvatars = [
 ];
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const { user, updateProfile } = useAuthContext();
+  const { subscriptions, loading: subsLoading, cancel: cancelSub } = useSubscription();
   const [isEditing, setIsEditing] = useState(false);
+  const [cancellingId, setCancellingId] = useState(null);
+
+  const handleCancelSub = async (subId) => {
+    try {
+      setCancellingId(subId);
+      await cancelSub(subId);
+      toast.success("Subscription cancelled successfully.");
+    } catch (err) {
+      toast.error(err.message || "Failed to cancel subscription");
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   // Form states
   const [formData, setFormData] = useState({
@@ -118,7 +148,7 @@ export default function ProfilePage() {
       </HeroPanel>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Personal Details */}
+        {/* Left Column: Personal Details & Subscriptions & Avatar */}
         <div className="lg:col-span-2 space-y-8">
           <SectionCard
             title="Personal Details"
@@ -205,6 +235,108 @@ export default function ProfilePage() {
             )}
           </SectionCard>
 
+          {/* My Subscriptions */}
+          <SectionCard
+            title="My Subscriptions"
+            description="Manage your active learning passes, renewal dates, and covered courses."
+          >
+            {subsLoading ? (
+              <div className="flex h-24 items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-upto-blue" />
+              </div>
+            ) : subscriptions.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center space-y-3">
+                <CreditCard className="mx-auto h-8 w-8 text-muted" />
+                <p className="text-xs text-muted">You do not have any active subscriptions.</p>
+                <Button size="sm" variant="gradient" onClick={() => navigate("/subscribe")}>
+                  Explore Subscriptions
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {subscriptions.map((sub) => {
+                  const plan = sub.planId || {};
+                  const isCancelled = sub.status === "cancelled";
+                  const startDate = sub.startedAt ? new Date(sub.startedAt).toLocaleDateString() : "Active";
+                  const expiryDate = sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : "Ongoing";
+
+                  return (
+                    <div
+                      key={sub._id || sub.id}
+                      className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-4 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-sm font-black text-[hsl(var(--foreground))]">
+                            {plan.name || "Learning Pass"}
+                          </h4>
+                          <p className="text-[10px] text-muted font-mono mt-0.5">
+                            Ref: {sub.demoReference || sub._id} ({sub.paymentMode || "demo"})
+                          </p>
+                        </div>
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            sub.status === "active"
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                              : isCancelled
+                              ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                              : "bg-gray-500/20 text-gray-400"
+                          }`}
+                        >
+                          {sub.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs text-muted border-t border-[hsl(var(--border))] pt-2">
+                        <div>
+                          <span className="font-semibold text-[10px] uppercase text-muted block">Started</span>
+                          <span>{startDate}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-[10px] uppercase text-muted block">Expires</span>
+                          <span className={sub.status === "active" ? "text-emerald-400 font-bold" : ""}>{expiryDate}</span>
+                        </div>
+                      </div>
+
+                      {Array.isArray(sub.courseIds) && sub.courseIds.length > 0 && (
+                        <div className="pt-2 border-t border-[hsl(var(--border))]">
+                          <span className="text-[10px] uppercase font-bold text-muted block mb-1">Covered Courses:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {sub.courseIds.map((c, i) => (
+                              <span key={i} className="rounded bg-upto-blue/10 px-2 py-0.5 text-[10px] font-semibold text-upto-blue">
+                                {typeof c === "object" ? c.title : `Course #${c}`}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {sub.status === "active" && (
+                        <div className="flex justify-end pt-2 border-t border-[hsl(var(--border))]">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={cancellingId === (sub._id || sub.id)}
+                            onClick={() => handleCancelSub(sub._id || sub.id)}
+                            className="text-xs text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
+                          >
+                            {cancellingId === (sub._id || sub.id) ? (
+                              <>
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" /> Cancelling...
+                              </>
+                            ) : (
+                              "Cancel Subscription"
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </SectionCard>
+
           {/* Profile Picture Selector */}
           <SectionCard
             title="Profile Picture & Avatar"
@@ -232,7 +364,7 @@ export default function ProfilePage() {
           </SectionCard>
         </div>
 
-        {/* Skills & Preferences */}
+        {/* Right Column: Skills & Preferences */}
         <div className="space-y-8">
           {/* Skills Management */}
           <SectionCard title="My Skills" description="Specify what technical abilities you possess.">

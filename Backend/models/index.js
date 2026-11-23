@@ -20,3 +20,5 @@ export { default as LessonChunk } from "./LessonChunk.js";
 export { default as ChatSession } from "./ChatSession.js";
 export { default as LessonDraft } from "./LessonDraft.js";
 export { default as AIRequestLog } from "./AIRequestLog.js";
+export { default as SubscriptionPlan } from "./SubscriptionPlan.js";
+export { default as Subscription } from "./Subscription.js";

@@ -106,6 +106,17 @@ export const adminApi = {
   getMentors: () => api.get("/admin/mentors"),
   updateMentorStatus: (id, data) => api.patch(`/admin/mentors/${id}/status`, data),
   activateMentor: (id, data) => api.patch(`/admin/mentors/${id}/activate`, data),
+  updateCourseAccess: (id, data) => api.patch(`/admin/courses/${id}/access`, data),
+};
+
+export const subscriptionApi = {
+  getPlans: () => api.get("/subscriptions/plans"),
+  checkout: (data) => api.post("/subscriptions/checkout", data),
+  getMySubscriptions: () => api.get("/subscriptions/me"),
+  cancel: (id) => api.post(`/subscriptions/${id}/cancel`),
+  getAllAdmin: () => api.get("/subscriptions/admin/all"),
+  createPlanAdmin: (data) => api.post("/subscriptions/admin/plans", data),
+  updatePlanAdmin: (id, data) => api.patch(`/subscriptions/admin/plans/${id}`, data),
 };
 
 export const instructorApi = {

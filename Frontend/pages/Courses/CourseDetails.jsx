@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, CheckCircle, Circle, Zap, Clock, Users, Play, Award, AlertCircle, RefreshCw, Heart, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, Circle, Zap, Clock, Users, Play, Award, AlertCircle, RefreshCw, Heart, Loader2, Lock, Check } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { PageLoader } from "@/components/common/Spinner";
 import { AIMentorPlayer } from "@/components/ui/AIMentorPlayer";
 import { MentorCard } from "@/components/ui/MentorCard";
 import { useFetchCourse } from "@/hooks/useFetchCourse";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useApiQuery } from "@/hooks/useApi";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAuthContext } from "@/store/AuthContext";
@@ -29,6 +30,12 @@ export default function CourseDetails() {
 
   const { isAuthenticated } = useAuthContext();
   const { isWishlisted, toggleWishlist } = useWishlist();
+  const { hasAccess, isSubscribedToCourse } = useSubscription();
+
+  const isFree = course ? (course.accessType === "free" || (!course.accessType && (!course.price || course.price === 0))) : true;
+  const userHasAccess = course ? hasAccess(course) : false;
+  const userIsSubscribed = course ? isSubscribedToCourse(course) : false;
+  const isLockedPaidCourse = Boolean(course && !isFree && !userHasAccess);
 
   const isSaved = course ? isWishlisted(course) : false;
 
@@ -158,7 +165,30 @@ export default function CourseDetails() {
             </div>
           </div>
 
-          {activeLesson ? (
+          {isLockedPaidCourse ? (
+            <div className="rounded-2xl border border-upto-orange/40 bg-gradient-to-br from-upto-orange/15 via-upto-card to-upto-dark p-10 text-center shadow-xl">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-upto-orange/20 text-upto-orange ring-2 ring-upto-orange/40">
+                <Lock className="h-8 w-8" />
+              </div>
+              <h2 className="mt-4 text-2xl font-black text-white">This Premium Course is Locked</h2>
+              <p className="mt-2 max-w-md mx-auto text-sm text-gray-300">
+                "{course.title}" is a premium course requiring an active subscription to access interactive AI voice mentorship, full lectures, code evaluation, and certification.
+              </p>
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button
+                  variant="gradient"
+                  size="lg"
+                  onClick={() => navigate(`/subscribe?course=${course.id || course._id}`)}
+                  className="gap-2 shadow-lg shadow-orange-500/20 font-bold"
+                >
+                  <Lock className="h-4 w-4" /> Subscribe to Unlock ({formatCurrency(course.price)})
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/courses")}>
+                  Browse Free Courses
+                </Button>
+              </div>
+            </div>
+          ) : activeLesson ? (
             <AIMentorPlayer
               mentor={currentMentor}
               lesson={activeLesson}
@@ -180,7 +210,18 @@ export default function CourseDetails() {
               {lessons.map((lesson, i) => (
                 <button
                   key={lesson.id || lesson._id || i}
-                  onClick={() => setActiveLesson(lesson)}
+                  onClick={() => {
+                    if (isLockedPaidCourse && i > 0) {
+                      toast.info("Active subscription required to view lesson details.", {
+                        action: {
+                          label: "Subscribe",
+                          onClick: () => navigate(`/subscribe?course=${course.id || course._id}`),
+                        },
+                      });
+                      return;
+                    }
+                    setActiveLesson(lesson);
+                  }}
                   className={`flex w-full items-center gap-4 rounded-xl p-4 text-left transition-all ${
                     activeLesson?.id === lesson.id || activeLesson?._id === lesson._id
                       ? "bg-upto-blue/15 border border-upto-blue/40"
@@ -189,6 +230,8 @@ export default function CourseDetails() {
                 >
                   {lesson.completed ? (
                     <CheckCircle className="h-5 w-5 shrink-0 text-green-400" />
+                  ) : isLockedPaidCourse && i > 0 ? (
+                    <Lock className="h-5 w-5 shrink-0 text-upto-orange" />
                   ) : (
                     <Circle className="h-5 w-5 shrink-0 text-gray-600" />
                   )}
@@ -196,10 +239,16 @@ export default function CourseDetails() {
                     <p className="font-medium text-sm">
                       {i + 1}. {lesson.title}
                     </p>
-                    <p className="text-xs text-gray-500">{lesson.duration || "15 min"}</p>
+                    <p className="text-xs text-gray-500">
+                      {isLockedPaidCourse && i > 0 ? "Locked - Pro Subscription" : (lesson.duration || "15 min")}
+                    </p>
                   </div>
                   <span className="flex items-center gap-1 text-xs text-upto-blue font-semibold">
-                    <Play className="h-3.5 w-3.5" /> Start Lesson
+                    {isLockedPaidCourse && i > 0 ? (
+                      <span className="text-upto-orange flex items-center gap-1"><Lock className="h-3 w-3" /> Locked</span>
+                    ) : (
+                      <><Play className="h-3.5 w-3.5" /> Start Lesson</>
+                    )}
                   </span>
                 </button>
               ))}
@@ -209,16 +258,34 @@ export default function CourseDetails() {
 
         <div className="space-y-6">
           <div className="rounded-2xl border border-gray-800 bg-upto-card p-6">
-            <h3 className="font-bold mb-1">Enrollment Status</h3>
-            <p className="text-3xl font-black mt-2">
-              {!course.price || course.price === 0 ? "Free" : formatCurrency(course.price)}
-            </p>
+            <h3 className="font-bold mb-1">Enrollment & Access</h3>
+            <div className="mt-3 mb-4">
+              {userIsSubscribed ? (
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3.5 py-1.5 text-xs font-bold text-emerald-400 border border-emerald-500/30">
+                  <Check className="h-4 w-4" /> Subscribed ✓
+                </div>
+              ) : isFree ? (
+                <div className="inline-flex items-center rounded-full bg-emerald-500/15 px-3.5 py-1 text-xs font-black tracking-widest text-emerald-400 border border-emerald-500/30">
+                  FREE
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/subscribe?course=${course.id || course._id}`)}
+                  className="flex items-center gap-2 rounded-xl bg-upto-orange/20 px-4 py-2 text-base font-extrabold text-upto-orange border border-upto-orange/50 hover:bg-upto-orange hover:text-white transition-all shadow-sm"
+                  title="Subscribe to unlock this course"
+                >
+                  <Lock className="h-4 w-4" />
+                  {course.price ? `₹${Number(course.price).toLocaleString("en-IN")} - Subscribe` : "Subscribe"}
+                </button>
+              )}
+            </div>
 
-            {isEnrolled ? (
+            {isEnrolled || userHasAccess ? (
               <div className="mt-4 space-y-3">
                 <div className="flex items-center gap-2 rounded-lg bg-green-500/10 p-3 text-xs font-bold text-green-400 border border-green-500/20">
                   <CheckCircle className="h-4 w-4 shrink-0" />
-                  Enrolled & Active in this Course
+                  Active Access to Course
                 </div>
                 {lessons.length > 0 && (
                   <Button
@@ -230,6 +297,34 @@ export default function CourseDetails() {
                   </Button>
                 )}
               </div>
+            ) : isLockedPaidCourse ? (
+              <div className="mt-4 space-y-2">
+                <Button
+                  variant="gradient"
+                  className="w-full gap-2 font-bold"
+                  onClick={() => navigate(`/subscribe?course=${course.id || course._id}`)}
+                >
+                  <Lock className="h-4 w-4" /> Subscribe to Unlock
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleWishlistToggle}
+                  disabled={wishlistLoading}
+                  className={`w-full gap-2 transition-all ${
+                    isSaved
+                      ? "border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                      : "border-gray-700 hover:border-gray-600 hover:bg-gray-800/40 text-gray-300"
+                  }`}
+                >
+                  {wishlistLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-red-400" />
+                  ) : (
+                    <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : ""}`} />
+                  )}
+                  {isSaved ? "Saved in Wishlist" : "Save to Wishlist"}
+                </Button>
+              </div>
             ) : (
               <div className="mt-4 space-y-2">
                 <Button
@@ -238,7 +333,7 @@ export default function CourseDetails() {
                   onClick={handleEnrollNow}
                   disabled={enrolling}
                 >
-                  {enrolling ? "Enrolling..." : !course.price || course.price === 0 ? "Start Free" : "Enroll Now"}
+                  {enrolling ? "Enrolling..." : "Enroll Free"}
                 </Button>
                 <Button
                   type="button"

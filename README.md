@@ -5,7 +5,7 @@
 [![React Version](https://img.shields.io/badge/React-19.0-blue.svg)](https://react.dev/)
 [![MongoDB Mongoose](https://img.shields.io/badge/MongoDB-Mongoose%208.x-emerald.svg)](https://mongoosejs.com/)
 [![ESLint](https://img.shields.io/badge/ESLint-Clean%20(0%20errors)-success.svg)](eslint.config.js)
-[![Tests](https://img.shields.io/badge/Tests-122%20API%20%2B%20RTL%20Passing-success.svg)](Backend/tests/)
+[![Tests](https://img.shields.io/badge/Tests-155%20API%20%2B%20RTL%20Passing-success.svg)](Backend/tests/)
 
 An enterprise-grade, ethically grounded Learning Management System (LMS) built with **React 19**, **Node.js (Express ESM)**, **MongoDB (Mongoose)**, and **Google Gemini AI**. Learners study interactive, structured curriculum guided by pedagogical AI mentors featuring real speech synthesis, real-time Web Audio viseme-driven avatars, grounded RAG doubt resolution, and gamified XP leagues.
 
@@ -95,9 +95,17 @@ flowchart TD
 - **Advisory AI Code Evaluation**: AI code feedback is strictly advisory and cannot override sandbox test results or award XP.
 
 ### 6. Observability, Validation & Security
-- **Pino Structured Logging**: Low-overhead structured JSON logging with request duration tracking, error telemetry, and automatic redaction of sensitive fields (`password`, `token`, `otp`).
+- **Pino Structured Logging**: Low-overhead structured JSON logging with request duration tracking, error telemetry, and automatic redaction of sensitive fields (`password`, `token`, `otp`, `cardNumber`, `cvv`, `expiry`).
 - **Distributed Request IDs**: Every request is assigned an `X-Request-Id` UUID, tracked across logs and returned in HTTP response headers.
 - **Deep Health Check**: `/api/health` performs a live MongoDB admin ping, checks AI provider readiness, and exposes system uptime and memory statistics.
+
+### 7. Course Access Control & Demo Subscription Billing
+- **Free vs Paid Access Tiers**: ~80% of courses are completely **FREE** (marked with a green badge and direct enrollment). A curated selection of premium engineering tracks (e.g. Cloud DevOps, Startup Engineering, System Design, Ethical Hacking, GenAI) require subscription access.
+- **Demo Payment Mode**: Designed for academic evaluation, portfolio reviews, and project demos. Entering any test credentials or clicking "Fill Demo Data" simulates payment with zero real-world financial transaction. Generates verifiable `DEMO-<uuid>` references, auto-enrolls learners, and dispatches in-app activation notices.
+- **Zero Card Data Persistence (PCI-DSS Ethical Compliance)**: Card numbers, CVVs, and expiry dates are dropped at the controller layer, redacted from Pino logger, and **NEVER stored in MongoDB**. Only billing name and email are recorded.
+- **Pluggable Payment Gateway Architecture**: A clean factory (`Backend/services/paymentProviders/`) switches between `demo.js` and `razorpay.js` via the `PAYMENT_MODE` environment variable without requiring frontend modifications.
+- **Production Safety Guard**: In production (`NODE_ENV=production`), running `PAYMENT_MODE=demo` requires `ALLOW_DEMO_PAYMENTS=true`. If omitted, the server halts at startup to prevent unintentional live simulation.
+- **Full Backend Enforcement**: Access control (`hasCourseAccess`) is strictly validated server-side across lesson video/audio generation, AI chat, quizzes, and certificate issuance, returning HTTP 402 `SUBSCRIPTION_REQUIRED` when unentitled.
 - **Centralized Zod Validation**: All inbound HTTP request bodies are validated against typed Zod schemas, returning standardized error envelopes:
   ```json
   {
@@ -160,12 +168,17 @@ npm run build
 
 ### Coverage Highlights
 - **Client Tests (`Frontend/**/*.test.jsx`)**:
+  - `SubscriptionPage.test.jsx`: Free badges vs price button rendering, navigation to `/subscribe?course=<id>`, demo card autofill, demo checkout authorization success screen, and locked course banner state in CourseDetails.
+  - `CourseCard.test.jsx`: Wishlist toggling, optimistic updates, and authentication prompts.
   - `Login.test.jsx`: Form rendering, input validation, student sign-in, and 2FA admin access code flow.
   - `AIMentorPlayer.test.jsx`: Accessibility ARIA landmarks, ethics disclosure notice, play/pause controls, keyboard shortcuts (`C`, `M`), and caption synchronization.
   - `LeagueList.test.jsx`: League filtering, search, level categorization, and quiz attempt integration.
+  - `Wishlist.test.jsx`: Saved course listing, empty state, and remove item flow.
   - `ErrorBoundary.test.jsx`: Graceful component error catch, fallback UI, and recovery trigger.
 - **Server Tests (`Backend/tests/*.test.js`)**:
-  - `122 passing tests` across 38 suites covering authentication hardening, token expiry, privilege escalation defense, idempotent course enrollment, progress math, quiz sanitization, certificate verification, instructor course approval lifecycle, sandbox process timeouts, RAG citations, and ethical consent checks.
+  - `132 passing tests` across 44 suites covering:
+    - `subscription.test.js`: Free courses open to all learners; paid courses returning 402 `SUBSCRIPTION_REQUIRED` without subscription; demo checkout with random data creates subscription and auto-enrolls learner; unlocked course reveals transcripts; idempotency returns existing subscription; card details strictly dropped and never stored; expired subscriptions lose access; production security guard prevents simulated payments without flag.
+    - `auth.test.js`, `lms_features.test.js`, `instructor_workflow.test.js`, `mentor_ethics.test.js`, `ai_mentor.test.js`, `challenge_evaluation.test.js`, `talking_avatar.test.js`, `database.test.js`.
 
 ---
 

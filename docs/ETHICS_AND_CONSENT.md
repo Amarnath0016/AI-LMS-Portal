@@ -148,3 +148,25 @@ Our automated test suite continuously verifies this policy:
 - `Backend/tests/mentor_ethics.test.js`: Verifies model taxonomy, activation gates, seed data consent compliance, zero living celebrity impersonation, and disclosure propagation in AI chat.
 - All 10 platform mentors are seeded with explicit `consentDocUrl` and `licenseInfo` references.
 - Periodic audits are conducted prior to platform deployments.
+
+---
+
+## 8. Financial Transparency, Simulated Payments & Learner Privacy
+
+In addition to synthetic media ethics, UptoSkills LMS maintains strict consumer protection and data privacy standards regarding course pricing, access models, and payment processing:
+
+1. **Honest Demo Payment Disclosure**:
+   - The platform operates in **Demo Payment Mode** (`PAYMENT_MODE=demo`) for capstone demonstrations, project evaluations, and academic walkthroughs.
+   - The UI displays explicit, unmistakable amber notice banners on all checkout flows:  
+     `"DEMO PAYMENT MODE ACTIVE — No real credit card will be charged. Enter any random details, or click the button to autofill test credentials."`
+   - Evaluators and students are fully informed that no banking transactions, wire transfers, or credit card debits take place.
+
+2. **PCI-DSS Compliance & Card Data Dropping**:
+   - The platform adopts the principle of **strict data minimization**.
+   - Credit card numbers, expiration dates, and Card Verification Values (CVV) are **NEVER stored** in the MongoDB database.
+   - Incoming card parameters are utilized strictly for mock format validation in `subscriptionController.js`, dropped from the payload before entity creation, and scrubbed from server runtime logs via Pino logger redaction lists.
+   - The `Subscription` collection stores solely non-sensitive account metadata: `userId`, `planId`, `courseIds`, `startedAt`, `expiresAt`, `status`, `paymentMode: "demo"`, `demoReference: "DEMO-<uuid>"`, `billingName`, and `billingEmail`.
+
+3. **Open Education Commitment**:
+   - The vast majority of courses (~80%) are completely **FREE** of charge, ensuring universal access to high-quality engineering pedagogy without paywalls.
+   - A limited selection of advanced tracks (4–6 courses) demonstrate premium subscription tiering, allowing users to experience full subscription lifecycle management, access revocation on expiry, and course unlocking without paying real money.

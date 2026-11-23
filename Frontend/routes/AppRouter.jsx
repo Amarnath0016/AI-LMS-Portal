@@ -41,6 +41,8 @@ const AchievementBadgesPage = lazy(() => import("@/pages/AchievementBadges/Achie
 const CareerOptionsPage = lazy(() => import("@/pages/CareerOptions/CareerOptionsPage"));
 const VerifyCertificate = lazy(() => import("@/pages/Certificates/VerifyCertificate"));
 const CourseBuilder = lazy(() => import("@/pages/Instructor/CourseBuilder"));
+const SubscriptionPage = lazy(() => import("@/pages/Subscription/SubscriptionPage"));
+const MySubscriptionsPage = lazy(() => import("@/pages/Subscription/MySubscriptionsPage"));
 
 export default function AppRouter() {
   return (
@@ -80,6 +82,26 @@ export default function AppRouter() {
                   <MainLayout showSidebar={false}><CourseDetails /></MainLayout>
                 </PrivateRoute>
               }
+            />
+            <Route
+              path="/subscribe"
+              element={
+                <PrivateRoute>
+                  <MainLayout><SubscriptionPage /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/subscriptions"
+              element={
+                <PrivateRoute>
+                  <MainLayout><MySubscriptionsPage /></MainLayout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-subscriptions"
+              element={<Navigate to="/subscriptions" replace />}
             />
             <Route
               path="/dashboard"

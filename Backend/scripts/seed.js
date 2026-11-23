@@ -20,6 +20,7 @@ import {
   ForumPost,
   ForumComment,
   DailyChallenge,
+  SubscriptionPlan,
 } from "../models/index.js";
 import { indexCourseLessonChunks } from "../utils/retrievalUtils.js";
 import {
@@ -29,6 +30,7 @@ import {
   seedQuizzes,
   seedCertificates,
   seedForumPosts,
+  seedSubscriptionPlans,
 } from "../utils/seedData.js";
 
 export const demoChallenges = [
@@ -240,6 +242,19 @@ export const seedDatabase = async () => {
     );
     userDocs.push(doc);
     console.log(`✔ Seeded user (${doc.role}): ${doc.email}`);
+  }
+
+  // 2.5 Seed Subscription Plans
+  console.log("\n[2.5/7] Seeding Subscription Plans...");
+  const planDocs = [];
+  for (const sp of seedSubscriptionPlans) {
+    const planDoc = await SubscriptionPlan.findOneAndUpdate(
+      { name: sp.name },
+      { $set: sp },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    planDocs.push(planDoc);
+    console.log(`✔ Seeded subscription plan: ${planDoc.name} (₹${planDoc.price})`);
   }
 
   // 3. Seed Courses, Modules & Lessons

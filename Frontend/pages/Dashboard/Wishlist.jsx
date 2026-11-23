@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Clock, Users, Zap, Trash2, Loader2, AlertCircle, ArrowRight, BookOpen } from "lucide-react";
+import { Heart, Clock, Users, Zap, Trash2, Loader2, AlertCircle, ArrowRight, BookOpen, Lock, Check } from "lucide-react";
 import { Button } from "@/components/common/button";
 import { HeroPanel, SectionCard, EmptyState } from "@/components/ui/dashboard";
 import { formatCurrency } from "@/utils";
@@ -8,10 +8,12 @@ import { toast } from "sonner";
 import { wishlistApi, courseApi, enrollmentApi } from "@/api/endpoints";
 import { useApiQuery } from "@/hooks/useApi";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export default function WishlistPage() {
   const navigate = useNavigate();
   const { refetchWishlist: syncGlobalWishlist } = useWishlist();
+  const { hasAccess, isSubscribedToCourse } = useSubscription();
   const [enrollingId, setEnrollingId] = useState(null);
   const [removingId, setRemovingId] = useState(null);
 
@@ -187,13 +189,46 @@ export default function WishlistPage() {
 
                     {/* Price and Action Button */}
                     <div className="mt-5 flex items-center justify-between border-t border-[hsl(var(--border))] pt-4">
-                      <span className="text-sm font-black text-[hsl(var(--foreground))]">
-                        {!course.price || course.price === 0 ? "Freemium" : formatCurrency(course.price)}
-                      </span>
+                      <div>
+                        {isSubscribedToCourse(course) ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-bold text-emerald-400 border border-emerald-500/30">
+                            <Check className="h-3 w-3" /> Subscribed ✓
+                          </span>
+                        ) : course.accessType === "free" || (!course.accessType && (!course.price || course.price === 0)) ? (
+                          <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-black tracking-wider text-emerald-400 border border-emerald-500/30">
+                            FREE
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/subscribe?course=${courseId}`);
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-upto-orange/15 px-2.5 py-1 text-xs font-bold text-upto-orange border border-upto-orange/40 hover:bg-upto-orange hover:text-white transition-all shadow-sm"
+                            title="Subscribe to unlock this course"
+                          >
+                            <Lock className="h-3 w-3" />
+                            {course.price ? `₹${Number(course.price).toLocaleString("en-IN")} - Subscribe` : "Subscribe"}
+                          </button>
+                        )}
+                      </div>
                       {isAlreadyEnrolled ? (
                         <span className="rounded-lg bg-upto-green/10 px-3.5 py-1.5 text-xs font-bold text-upto-green">
                           Enrolled
                         </span>
+                      ) : (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free")) && !hasAccess(course) ? (
+                        <Button
+                          variant="gradient"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/subscribe?course=${courseId}`);
+                          }}
+                          className="px-3 py-1.5 text-xs font-bold gap-1"
+                        >
+                          <Lock className="h-3 w-3" /> Unlock
+                        </Button>
                       ) : (
                         <Button
                           variant="gradient"

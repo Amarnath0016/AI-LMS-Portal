@@ -8,6 +8,9 @@ const enrollmentSchema = new mongoose.Schema(
     progress: { type: Number, default: 0, min: 0, max: 100 },
     completed: { type: Boolean, default: false },
     completedAt: { type: Date, default: null },
+    isPaid: { type: Boolean, default: false },
+    paymentConfirmed: { type: Boolean, default: false },
+    status: { type: String, default: "active" },
   },
   {
     timestamps: true,

@@ -8,6 +8,7 @@ import Wishlist from "../models/Wishlist.js";
 import Notification from "../models/Notification.js";
 import { computeUpdatedStreak } from "../utils/streakUtils.js";
 import { issueCertificateIfEligible } from "../utils/certificateUtils.js";
+import { hasCourseAccess } from "../utils/subscriptionUtils.js";
 
 const getCourseQuery = (id) => {
   if (mongoose.Types.ObjectId.isValid(id) && String(new mongoose.Types.ObjectId(id)) === String(id)) {
@@ -88,6 +89,29 @@ export const getCourseById = async (req, res) => {
     }
 
     const courseObj = course.toObject();
+    const hasAccess = await hasCourseAccess(req.user, course);
+    const isPaid = course.accessType === "paid" || (course.price !== undefined && course.price > 0);
+    courseObj.hasAccess = hasAccess;
+    courseObj.isLocked = !hasAccess && isPaid;
+
+    // Redact lesson body content if course is paid & user has no active subscription (keep title/duration)
+    if (courseObj.isLocked && Array.isArray(courseObj.lessons)) {
+      courseObj.lessons = courseObj.lessons.map((lesson, idx) => {
+        if (idx === 0) {
+          // Allow preview of first lesson overview, but redact full internal scripts/transcripts/notes
+          const { script, text, transcript, pdfNotes, ...previewLesson } = lesson;
+          return { ...previewLesson, isPreview: true };
+        }
+        return {
+          _id: lesson._id,
+          id: lesson.id,
+          title: lesson.title,
+          duration: lesson.duration,
+          completed: false,
+          isLocked: true,
+        };
+      });
+    }
 
     return res.json({
       success: true,
@@ -118,14 +142,21 @@ export const enrollCourse = async (req, res) => {
       });
     }
 
-    // Requirement: payment / free check
-    const { paymentConfirmed, isPaid, paymentDetails } = req.body || {};
-    if (course.price > 0 && !paymentConfirmed && !isPaid && !paymentDetails) {
-      return res.status(402).json({
-        success: false,
-        message: `Payment required: Course enrollment fee is ${course.price}.`,
-        price: course.price,
-      });
+    // Check subscription / course access for paid courses
+    const isPaidCourse = course.accessType === "paid" || (course.price !== undefined && course.price > 0);
+    const hasAccess = await hasCourseAccess(req.user, course);
+
+    if (isPaidCourse && !hasAccess) {
+      const { paymentConfirmed, isPaid, paymentDetails } = req.body || {};
+      if (!paymentConfirmed && !isPaid && !paymentDetails) {
+        return res.status(402).json({
+          success: false,
+          code: "SUBSCRIPTION_REQUIRED",
+          courseId: course.id !== undefined ? course.id : course._id,
+          message: `Subscription or payment required: Course "${course.title}" is a premium paid course.`,
+          price: course.price,
+        });
+      }
     }
 
     const userId = req.user._id || req.user.id;
@@ -254,6 +285,17 @@ export const completeLesson = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    // Access control check for paid courses
+    const hasAccess = await hasCourseAccess(user, course);
+    if (!hasAccess && (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free"))) {
+      return res.status(402).json({
+        success: false,
+        code: "SUBSCRIPTION_REQUIRED",
+        courseId: course.id !== undefined ? course.id : course._id,
+        message: "Subscription required to complete lessons in this paid course.",
+      });
     }
 
     // Check if lesson was already completed by this user (Idempotent requirement)
@@ -417,7 +459,9 @@ export const updateCourseProgress = async (req, res) => {
 
 export const createCourse = async (req, res) => {
   try {
-    const status = req.user?.role === "admin" ? "approved" : "pending";
+    const isPaid = req.body.accessType === "paid" || Number(req.body.price) > 0;
+    // Instructors creating paid courses require admin review (status: pending)
+    const status = req.user?.role === "admin" ? (req.body.status || "approved") : (isPaid ? "pending" : "pending");
     const newCourse = await Course.create({
       ...req.body,
       instructorId: req.user?._id || req.user?.id,
@@ -426,7 +470,7 @@ export const createCourse = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Course submitted for review.",
+      message: status === "approved" ? "Course created and published." : "Course submitted for review.",
       data: newCourse,
     });
   } catch (error) {
@@ -451,6 +495,11 @@ export const updateCourse = async (req, res) => {
         success: false,
         message: "You do not have permission to modify this course.",
       });
+    }
+
+    // If an instructor turns a course into a paid course, require re-approval by admin
+    if (req.user.role !== "admin" && req.body.accessType === "paid" && course.accessType !== "paid") {
+      course.status = "pending";
     }
 
     Object.assign(course, req.body);
@@ -506,6 +555,16 @@ export const saveLessonPlaybackPosition = async (req, res) => {
 
     if (!course) {
       return res.status(404).json({ success: false, message: "Course not found." });
+    }
+
+    const hasAccess = await hasCourseAccess(req.user, course);
+    if (!hasAccess && (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free"))) {
+      return res.status(402).json({
+        success: false,
+        code: "SUBSCRIPTION_REQUIRED",
+        courseId: course.id !== undefined ? course.id : course._id,
+        message: "Subscription required to access lesson media in this paid course.",
+      });
     }
 
     const playbackSec = Math.max(0, Number(currentTime) || 0);
@@ -601,7 +660,18 @@ export const getLessonPlaybackPosition = async (req, res) => {
     if (courseId) {
       const isOid = mongoose.Types.ObjectId.isValid(courseId) && String(new mongoose.Types.ObjectId(courseId)) === String(courseId);
       const course = await Course.findOne(isOid ? { _id: courseId } : { id: Number(courseId) });
-      if (course) query.courseId = course._id;
+      if (course) {
+        query.courseId = course._id;
+        const hasAccess = await hasCourseAccess(req.user, course);
+        if (!hasAccess && (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free"))) {
+          return res.status(402).json({
+            success: false,
+            code: "SUBSCRIPTION_REQUIRED",
+            courseId: course.id !== undefined ? course.id : course._id,
+            message: "Subscription required to access lesson media in this paid course.",
+          });
+        }
+      }
     }
 
     const progressDoc = await LessonProgress.findOne(query);

@@ -21,6 +21,7 @@ import {
   Flame,
   CalendarDays,
   Briefcase,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/utils";
 
@@ -40,6 +41,7 @@ const studentSections = [
     title: "My Learning & Goals",
     links: [
       { to: "/profile", label: "Profile", icon: UserRound },
+      { to: "/subscriptions", label: "My Subscriptions", icon: CreditCard },
       { to: "/study-planner", label: "Study Planner", icon: CalendarDays },
       { to: "/achievement-badges", label: "Achievement Badges", icon: Award },
       { to: "/career-options", label: "Career Options", icon: Briefcase },

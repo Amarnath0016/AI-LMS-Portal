@@ -10,6 +10,7 @@ import {
   Mentor,
   Notification,
 } from "../models/index.js";
+import { hasCourseAccess } from "./subscriptionUtils.js";
 
 const getCourseQuery = (id) => {
   if (!id) return { _id: null };
@@ -28,6 +29,15 @@ export const issueCertificateIfEligible = async (userId, courseIdentifier) => {
 
     const course = await Course.findOne(getCourseQuery(courseIdentifier));
     if (!course) return { eligible: false, reason: "Course not found" };
+
+    // 0. Check Course Subscription Access for paid courses
+    const hasAccess = await hasCourseAccess(user, course);
+    if (!hasAccess) {
+      return {
+        eligible: false,
+        reason: "Active subscription required to earn certificate for this paid course.",
+      };
+    }
 
     // 1. Check Course Progress
     const enrollment = await Enrollment.findOne({

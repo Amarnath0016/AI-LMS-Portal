@@ -23,6 +23,14 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+// Payment Mode Security Check (Requirement 3)
+import { verifyProductionPaymentGuard, markExpiredSubscriptions } from "./utils/subscriptionUtils.js";
+const guard = verifyProductionPaymentGuard();
+if (!guard.allowed) {
+  console.error(guard.message);
+  process.exit(1);
+}
+
 // Import route modules
 import authRoutes from "./routes/authRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
@@ -38,6 +46,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import challengeRoutes from "./routes/challengeRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 import {
   getMyEnrollments,
@@ -180,6 +189,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/challenges", challengeRoutes);
 app.use("/challenges", challengeRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 // Direct shortcuts for requirement endpoints
 app.get("/api/me/enrollments", protect, getMyEnrollments);
@@ -242,6 +252,12 @@ const startServer = async () => {
     } catch (seedErr) {
       console.warn("[DB] Automated seed check skipped/failed:", seedErr.message);
     }
+
+    // Initialize daily subscription expiry cleaner
+    markExpiredSubscriptions().catch(() => {});
+    setInterval(() => {
+      markExpiredSubscriptions().catch(() => {});
+    }, 24 * 60 * 60 * 1000);
 
     return new Promise((resolve) => {
       const server = app.listen(PORT, () => {

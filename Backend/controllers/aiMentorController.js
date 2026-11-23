@@ -15,15 +15,44 @@ import {
 } from "../services/avatarAnimationService.js";
 import LessonDraft from "../models/LessonDraft.js";
 import Mentor from "../models/Mentor.js";
+import Course from "../models/Course.js";
+import { hasCourseAccess } from "../utils/subscriptionUtils.js";
 import mongoose from "mongoose";
 
 export const handleLessonAudioGeneration = async (req, res) => {
   try {
     const { lessonId } = req.params;
-    const { mentorId } = req.body || {};
+    const { mentorId, courseId } = req.body || {};
 
     if (!lessonId) {
       return res.status(400).json({ success: false, message: "Lesson ID is required." });
+    }
+
+    // Access control check for paid course audio generation
+    let course = null;
+    if (courseId) {
+      const isOid = mongoose.Types.ObjectId.isValid(courseId) && String(new mongoose.Types.ObjectId(courseId)) === String(courseId);
+      course = await Course.findOne(isOid ? { _id: courseId } : { id: Number(courseId) });
+    }
+    if (!course) {
+      course = await Course.findOne({
+        $or: [
+          { "lessons._id": mongoose.Types.ObjectId.isValid(lessonId) ? lessonId : null },
+          { "lessons.id": isNaN(lessonId) ? lessonId : Number(lessonId) },
+        ],
+      });
+    }
+
+    if (course) {
+      const hasAccess = await hasCourseAccess(req.user, course);
+      if (!hasAccess && (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free"))) {
+        return res.status(402).json({
+          success: false,
+          code: "SUBSCRIPTION_REQUIRED",
+          courseId: course.id !== undefined ? course.id : course._id,
+          message: "Subscription required to generate AI audio for this paid course.",
+        });
+      }
     }
 
     const audioData = await generateLessonAudio({
@@ -53,6 +82,23 @@ export const handleMentorChat = async (req, res) => {
         success: false,
         message: "Please provide a question for the mentor.",
       });
+    }
+
+    // Access control check if mentor chat is requested in context of a paid course
+    if (courseId) {
+      const isOid = mongoose.Types.ObjectId.isValid(courseId) && String(new mongoose.Types.ObjectId(courseId)) === String(courseId);
+      const course = await Course.findOne(isOid ? { _id: courseId } : { id: Number(courseId) });
+      if (course) {
+        const hasAccess = await hasCourseAccess(req.user, course);
+        if (!hasAccess && (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free"))) {
+          return res.status(402).json({
+            success: false,
+            code: "SUBSCRIPTION_REQUIRED",
+            courseId: course.id !== undefined ? course.id : course._id,
+            message: "Subscription required to chat with AI mentor for this paid course.",
+          });
+        }
+      }
     }
 
     const aiResponse = await chatWithMentor({

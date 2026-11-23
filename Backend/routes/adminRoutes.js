@@ -6,6 +6,7 @@ import {
   deleteUser,
   approveCourse,
   rejectCourse,
+  updateCourseAccess,
   getPlatformAnalytics,
   getInstructorApplications,
   approveInstructorApplication,
@@ -29,6 +30,7 @@ router.delete("/users/:id", deleteUser);
 
 router.patch("/courses/:id/approve", approveCourse);
 router.patch("/courses/:id/reject", rejectCourse);
+router.patch("/courses/:id/access", updateCourseAccess);
 
 router.get("/analytics", getPlatformAnalytics);
 

@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import Course from "../models/Course.js";
 import { computeUpdatedStreak } from "../utils/streakUtils.js";
 import { issueCertificateIfEligible } from "../utils/certificateUtils.js";
+import { hasCourseAccess } from "../utils/subscriptionUtils.js";
 
 const getUserQuery = (id) => {
   if (!id) return { _id: null };
@@ -48,6 +49,32 @@ export const getMyQuizAttempts = async (req, res) => {
 export const getQuiz = async (req, res) => {
   try {
     const { leagueId, partId } = req.params;
+    const { courseId } = req.query;
+
+    // Check course access if quiz belongs to a paid course
+    let course = null;
+    if (courseId) {
+      const isOid = mongoose.Types.ObjectId.isValid(courseId) && String(new mongoose.Types.ObjectId(courseId)) === String(courseId);
+      course = await Course.findOne(isOid ? { _id: courseId } : { id: Number(courseId) });
+    }
+    if (!course && leagueId) {
+      course = await Course.findOne({
+        $or: [{ id: Number(leagueId) }, { leagueId: Number(leagueId) }],
+      });
+    }
+
+    if (course) {
+      const hasAccess = await hasCourseAccess(req.user, course);
+      if (!hasAccess && (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free"))) {
+        return res.status(402).json({
+          success: false,
+          code: "SUBSCRIPTION_REQUIRED",
+          courseId: course.id !== undefined ? course.id : course._id,
+          message: "Subscription required to access quizzes for this paid course.",
+        });
+      }
+    }
+
     const quiz = await Quiz.findOne({
       leagueId: Number(leagueId),
       partId: Number(partId),
@@ -114,7 +141,7 @@ export const getQuiz = async (req, res) => {
 export const submitQuizAttempt = async (req, res) => {
   try {
     const quizIdParam = req.params.id;
-    const { leagueId, partId, answers = {}, xpAward = 150 } = req.body;
+    const { leagueId, partId, answers = {}, xpAward = 150, courseId } = req.body;
     const userId = req.user?._id || req.user?.id || 1;
 
     let targetLeagueId = leagueId;
@@ -124,6 +151,30 @@ export const submitQuizAttempt = async (req, res) => {
       const parts = quizIdParam.split("-");
       targetLeagueId = Number(parts[0]);
       targetPartId = Number(parts[1]);
+    }
+
+    // Access control check for paid course quizzes
+    let course = null;
+    if (courseId) {
+      const isOid = mongoose.Types.ObjectId.isValid(courseId) && String(new mongoose.Types.ObjectId(courseId)) === String(courseId);
+      course = await Course.findOne(isOid ? { _id: courseId } : { id: Number(courseId) });
+    }
+    if (!course && targetLeagueId !== undefined) {
+      course = await Course.findOne({
+        $or: [{ id: Number(targetLeagueId) }, { leagueId: Number(targetLeagueId) }],
+      });
+    }
+
+    if (course) {
+      const hasAccess = await hasCourseAccess(req.user, course);
+      if (!hasAccess && (course.accessType === "paid" || (course.price > 0 && course.accessType !== "free"))) {
+        return res.status(402).json({
+          success: false,
+          code: "SUBSCRIPTION_REQUIRED",
+          courseId: course.id !== undefined ? course.id : course._id,
+          message: "Subscription required to submit quizzes for this paid course.",
+        });
+      }
     }
 
     // Fetch quiz with real answers for server grading
