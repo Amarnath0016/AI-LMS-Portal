@@ -1,18 +1,22 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { getHomePath } from "@/config/navigation";
+import { getHomePath } from "@/utils/roleRedirect";
+import RouteLoadingSkeleton from "@/components/common/LoadingSkeleton";
 
 export function PrivateRoute({ children, roles }) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
   const location = useLocation();
+
+  if (loading) {
+    return <RouteLoadingSkeleton />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (roles && user && !roles.includes(user.role)) {
-    const fallbackPath = getHomePath(user.role);
-    return <Navigate to={fallbackPath} replace />;
+    return <Navigate to={getHomePath(user.role)} replace />;
   }
 
   return children;

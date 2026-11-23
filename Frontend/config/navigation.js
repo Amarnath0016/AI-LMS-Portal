@@ -25,10 +25,13 @@ import {
   Receipt,
   Settings,
 } from "lucide-react";
+import { ROLE_HOME, getHomePath } from "@/utils/roleRedirect";
+
+export { getHomePath };
 
 export const navigationConfig = {
   student: {
-    homePath: "/dashboard",
+    homePath: ROLE_HOME.student,
     sidebarTitle: "Student Hub",
     sidebarSections: [
       {
@@ -81,7 +84,7 @@ export const navigationConfig = {
   },
 
   instructor: {
-    homePath: "/instructor-dashboard",
+    homePath: ROLE_HOME.instructor,
     sidebarTitle: "Instructor Studio",
     sidebarSections: [
       {
@@ -127,7 +130,7 @@ export const navigationConfig = {
   },
 
   admin: {
-    homePath: "/admin",
+    homePath: ROLE_HOME.admin,
     sidebarTitle: "Admin Panel",
     sidebarSections: [
       {
@@ -200,10 +203,6 @@ export const publicTopNav = [
 
 export function getNavigationForRole(role) {
   return navigationConfig[role] || navigationConfig.student;
-}
-
-export function getHomePath(role) {
-  return navigationConfig[role]?.homePath || "/dashboard";
 }
 
 export default navigationConfig;

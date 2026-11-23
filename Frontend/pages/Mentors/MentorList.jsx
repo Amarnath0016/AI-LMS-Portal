@@ -8,6 +8,7 @@ import { HeroPanel } from "@/components/ui/dashboard";
 import { useAuthContext } from "@/store/AuthContext";
 import { mentorApi } from "@/api/endpoints";
 import { useApiQuery } from "@/hooks/useApi";
+import { getHomePath } from "@/utils/roleRedirect";
 
 export default function MentorList() {
   const { user, updateProfile } = useAuthContext();
@@ -32,7 +33,7 @@ export default function MentorList() {
       updateProfile({ mentor: selectedMentor });
     }
     toast.success(`${selectedMentor.name} is now your AI mentor!`);
-    navigate("/dashboard");
+    navigate(getHomePath(user?.role));
   };
 
   return (

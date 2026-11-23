@@ -33,8 +33,15 @@ export function AuthProvider({ children }) {
         .getMe()
         .then((res) => {
           if (res.data?.user) {
-            setUser(res.data.user);
-            localStorage.setItem("user", JSON.stringify(res.data.user));
+            const serverUser = res.data.user;
+            setUser((prev) => {
+              const updated = { ...(prev || {}), ...serverUser };
+              if (prev && prev.role !== serverUser.role) {
+                updated.role = serverUser.role;
+              }
+              localStorage.setItem("user", JSON.stringify(updated));
+              return updated;
+            });
           }
         })
         .catch(() => {
@@ -54,6 +61,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (userData, token) => {
+    // Clear any previous session state so old role never leaks
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("auth");
+
     setUser(userData);
     localStorage.setItem("auth", "true");
     localStorage.setItem("user", JSON.stringify(userData));

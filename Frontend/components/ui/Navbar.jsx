@@ -6,7 +6,8 @@ import { BrandLogo } from "@/components/ui/BrandLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthContext } from "@/store/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
-import { getNavigationForRole, publicTopNav, getHomePath } from "@/config/navigation";
+import { getNavigationForRole, publicTopNav } from "@/config/navigation";
+import { getHomePath } from "@/utils/roleRedirect";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -53,7 +54,7 @@ export function Navbar() {
   };
 
   const handleMyXp = () => {
-    navigate("/dashboard", { state: { focusXp: true, from: location.pathname } });
+    navigate(getHomePath(role), { state: { focusXp: true, from: location.pathname } });
   };
 
   return (

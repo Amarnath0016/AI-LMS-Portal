@@ -6,7 +6,7 @@ import { PrivateRoute } from "@/routes/PrivateRoute";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import RouteLoadingSkeleton from "@/components/common/LoadingSkeleton";
 import { useAuth } from "@/hooks/useAuth";
-import { getHomePath } from "@/config/navigation";
+import { getHomePath } from "@/utils/roleRedirect";
 
 // Route-Level Code Splitting (React.lazy)
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
@@ -61,21 +61,6 @@ const AdminSubscriptionPlans = lazy(() => import("@/pages/Admin/SubscriptionPlan
 const AdminSubscriptionsList = lazy(() => import("@/pages/Admin/SubscriptionsList"));
 const AdminSettings = lazy(() => import("@/pages/Admin/AdminSettings"));
 
-function DashboardRoute() {
-  const { user } = useAuth();
-  if (user?.role === "instructor") {
-    return <Navigate to="/instructor-dashboard" replace />;
-  }
-  if (user?.role === "admin") {
-    return <Navigate to="/admin" replace />;
-  }
-  return (
-    <MainLayout>
-      <StudentDashboard />
-    </MainLayout>
-  );
-}
-
 function WildcardRoute() {
   const { isAuthenticated, user } = useAuth();
   if (isAuthenticated && user) {
@@ -125,12 +110,12 @@ export default function AppRouter() {
               }
             />
 
-            {/* Student-Only Learning & Career Routes */}
+            {/* Student Hub / Dashboard Route (Student Only) */}
             <Route
               path="/dashboard"
               element={
                 <PrivateRoute roles={["student"]}>
-                  <DashboardRoute />
+                  <MainLayout><StudentDashboard /></MainLayout>
                 </PrivateRoute>
               }
             />
@@ -226,16 +211,15 @@ export default function AppRouter() {
                 </PrivateRoute>
               }
             />
+            {/* Shared Authenticated Routes (All Roles) */}
             <Route
               path="/feedback"
               element={
-                <PrivateRoute roles={["student"]}>
+                <PrivateRoute>
                   <MainLayout><FeedbackPage /></MainLayout>
                 </PrivateRoute>
               }
             />
-
-            {/* Shared Authenticated Routes (All Roles) */}
             <Route
               path="/profile"
               element={

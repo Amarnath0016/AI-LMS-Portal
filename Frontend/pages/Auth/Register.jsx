@@ -6,6 +6,7 @@ import { Button } from "@/components/common/button";
 import { Field, FormMessage } from "@/components/ui/form";
 import { useAuthContext } from "@/store/AuthContext";
 import { authApi } from "@/api/endpoints";
+import { getHomePath } from "@/utils/roleRedirect";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -49,9 +50,9 @@ export default function Register() {
         const { user: backendUser, token } = res.data;
         register(backendUser, token);
         setLoading(false);
-        setMessage({ type: "success", text: "Account created. Taking you to mentors..." });
-        toast.success("Account created! Choose your AI mentor.");
-        navigate("/mentors");
+        setMessage({ type: "success", text: "Account created. Taking you to dashboard..." });
+        toast.success("Account created!");
+        navigate(getHomePath(backendUser?.role));
       })
       .catch((err) => {
         setLoading(false);

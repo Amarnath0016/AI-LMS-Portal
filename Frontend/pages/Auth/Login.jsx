@@ -7,7 +7,7 @@ import { Field, FormMessage } from "@/components/ui/form";
 import { useAuthContext } from "@/store/AuthContext";
 import { ROLES } from "@/constants";
 import { authApi } from "@/api/endpoints";
-import { getHomePath } from "@/config/navigation";
+import { getHomePath, canAccessPath } from "@/utils/roleRedirect";
 
 const loginRoles = ["student", "instructor", "admin"];
 
@@ -75,20 +75,37 @@ export default function Login() {
         login(backendUser, token);
         setLoading(false);
         setMessage({ type: "success", text: "Signed in successfully. Redirecting..." });
-        toast.success("Welcome back!");
-        const fromLocation = location.state?.from;
-        if (fromLocation) {
-          const dest = typeof fromLocation === "string" ? fromLocation : (fromLocation.pathname + (fromLocation.search || ""));
-          navigate(dest, { replace: true });
+
+        if (role && backendUser?.role && backendUser.role !== role) {
+          toast.info(`This account is registered as ${backendUser.role}. Redirecting to your dashboard.`);
         } else {
-          const home = getHomePath(backendUser.role || role);
-          navigate(home);
+          toast.success("Welcome back!");
         }
+
+        const home = getHomePath(backendUser.role);
+        const from = location.state?.from;
+        const dest = from
+          ? (typeof from === "string" ? from : from.pathname + (from.search || ""))
+          : null;
+
+        navigate(dest && canAccessPath(backendUser.role, dest) ? dest : home, { replace: true });
       })
       .catch((err) => {
         setLoading(false);
+        const serverMsg = err.response?.data?.message || "";
+        if (serverMsg.toLowerCase().includes("admin verification required") || serverMsg.toLowerCase().includes("admin access code")) {
+          setRole("admin");
+          setAdminVerification(true);
+          setMessage({
+            type: "info",
+            text: "Admin verification required: please enter your admin access code.",
+          });
+          toast.info("Admin access code required");
+          return;
+        }
+
         const errorMsg =
-          err.response?.data?.message ||
+          serverMsg ||
           (err.message === "Network Error"
             ? "Cannot reach authentication server. Please check your network connection."
             : "Invalid email or password.");

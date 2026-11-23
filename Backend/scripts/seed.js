@@ -415,6 +415,11 @@ export const seedDatabase = async () => {
   console.log("\n==================================================");
   console.log("🎉 Database Seed Completed Successfully!");
   console.log("==================================================");
+  console.log("\n🔑 Test Accounts & Known Credentials:");
+  console.log("  • Student:    shailesh@uptoskills.com     | password: student123");
+  console.log("  • Instructor: priya.mentor@uptoskills.com | password: mentor123");
+  console.log("  • Admin:      admin@uptoskills.com        | password: admin123 (Admin Code: 123456)");
+  console.log("==================================================\n");
   console.table(
     userDocs.map((u) => ({
       Role: u.role,
